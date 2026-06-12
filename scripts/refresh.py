@@ -164,14 +164,15 @@ PROMPT = f"""Today is {TODAY} Israel time.
 Below is content fetched from livegames.co.il (Israeli sports scores site).
 Extract ALL sports events listed for today and return ONLY raw JSON (no markdown fences):
 
-{{"games":[{{"id":"home-away","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
+{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
 
 Rules:
+- id: unique short kebab-case string per game, e.g. "canada-bosnia"
 - status: live=in play now, finished=full time, upcoming=not started, postponed=cancelled
 - heat 1=low drama 2=decent 3=must-watch — only for live/finished games
 - note must NOT contain score numbers
-- tv=true if shown on Israeli TV, include channel name
-- sport=football for soccer
+- CRITICAL — tv: set tv=true and include the channel name for ANY game that has an Israeli TV channel listed next to it in the page content. Israeli channels include: כאן 11, ספורט 1, ספורט 2, ספורט 3, ספורט 4, ספורט 5, ספורט 5+, רשת 13, קשת 12. If a channel name appears near a game, that game MUST have tv=true.
+- sport=football for soccer, other values for other sports
 
 Page content:
 {page_text}"""
