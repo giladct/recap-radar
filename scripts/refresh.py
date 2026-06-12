@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, json, re, sys, requests
+import os, json, re, time, requests
 from datetime import datetime, timezone, timedelta
 from urllib.parse import quote
 
@@ -9,49 +9,43 @@ now = datetime.now(IL)
 TODAY = now.strftime('%B %d, %Y')
 SNAPSHOT = now.strftime('%H:%M')
 
-PROMPT = f"""Search livegames.co.il for ALL sports events today, {TODAY} Israel time.
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+    'Accept-Language': 'he-IL,he;q=0.9,en;q=0.8',
+}
 
-Return ONLY raw JSON (no markdown fences, no other text):
-{{"games":[{{"id":"home-away","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45 etc","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"2026-06-12T18:00:00+03:00 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
 
-Rules:
-- status live = currently in play, finished = full time, upcoming = not started yet
-- heat 1=quiet 2=decent 3=must-watch, only set for live or finished games
-- note must NOT contain any score numbers
-- tv=true if broadcast on Israeli TV channel, include channel name
-- sport=football for soccer, other values for other sports
-- include every single game listed on livegames.co.il today"""
+def fetch_page(url):
+    r = requests.get(url, headers=HEADERS, timeout=30)
+    r.raise_for_status()
+    return r.text
 
 
 def call_gemini(prompt):
-    import time
-    models = ['gemini-1.5-flash', 'gemini-2.0-flash']
-    last_err = None
-    for model in models:
+    for model in ['gemini-1.5-flash', 'gemini-2.0-flash']:
         for attempt in range(3):
             try:
                 r = requests.post(
                     f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_KEY}',
                     json={
                         'contents': [{'role': 'user', 'parts': [{'text': prompt}]}],
-                        'tools': [{'google_search': {}}],
                         'generationConfig': {'maxOutputTokens': 4000, 'temperature': 0.1}
                     },
                     timeout=90
                 )
                 if r.status_code == 429:
-                    wait = 10 * (attempt + 1)
-                    print(f'{model} rate-limited, retrying in {wait}s...')
+                    wait = 20 * (attempt + 1)
+                    print(f'{model} rate-limited, waiting {wait}s...')
                     time.sleep(wait)
-                    last_err = f'429 on {model}'
                     continue
                 r.raise_for_status()
                 parts = r.json()['candidates'][0]['content']['parts']
+                print(f'OK: {model}')
                 return '\n'.join(p.get('text', '') for p in parts if p.get('text'))
             except Exception as e:
-                last_err = str(e)
+                print(f'{model} attempt {attempt+1} error: {e}')
                 time.sleep(5)
-    raise RuntimeError(f'All models failed: {last_err}')
+    raise RuntimeError('All Gemini models failed')
 
 
 def extract_json(text):
@@ -92,10 +86,10 @@ def card_html(g):
     started = g.get('started_at', '') or ''
 
     attrs = ''
-    if lid:     attrs += f' data-id="{lid}"'
+    if lid:              attrs += f' data-id="{lid}"'
     if status == 'live': attrs += ' data-live="true"'
-    if tv:      attrs += ' data-tv="true"'
-    if started: attrs += f' data-started-at="{started}"'
+    if tv:               attrs += ' data-tv="true"'
+    if started:          attrs += f' data-started-at="{started}"'
 
     ch = f'<span class="channel">&#128250; {channel}</span>' if tv and channel else ''
 
@@ -133,21 +127,48 @@ def section_html(title, games):
     if not games:
         return ''
     cards = '\n'.join(card_html(g) for g in games)
-    return (f'<div class="section">\n'
-            f'  <div class="section-title">{title}</div>\n'
-            f'  {cards}\n'
-            f'</div>\n')
+    return f'<div class="section">\n  <div class="section-title">{title}</div>\n{cards}\n</div>\n'
 
 
-# ── fetch & parse ──────────────────────────────────────────────────────────────
+# ── fetch livegames.co.il ──────────────────────────────────────────────────────
+print('Fetching livegames.co.il...')
+try:
+    page_html = fetch_page('https://www.livegames.co.il/')
+    # Strip scripts/styles to save tokens, keep visible text structure
+    page_text = re.sub(r'<script[^>]*>.*?</script>', '', page_html, flags=re.DOTALL)
+    page_text = re.sub(r'<style[^>]*>.*?</style>', '', page_text, flags=re.DOTALL)
+    page_text = page_text[:50000]
+    source_desc = 'HTML from livegames.co.il'
+except Exception as e:
+    print(f'Fetch failed ({e}), falling back to knowledge cutoff data')
+    page_text = f'Could not fetch livegames.co.il: {e}'
+    source_desc = 'fallback'
+
+PROMPT = f"""Today is {TODAY} Israel time.
+
+Below is content fetched from livegames.co.il (Israeli sports scores site).
+Extract ALL sports events listed for today and return ONLY raw JSON (no markdown fences):
+
+{{"games":[{{"id":"home-away","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
+
+Rules:
+- status: live=in play now, finished=full time, upcoming=not started, postponed=cancelled
+- heat 1=low drama 2=decent 3=must-watch — only for live/finished games
+- note must NOT contain score numbers
+- tv=true if shown on Israeli TV, include channel name
+- sport=football for soccer
+
+Page content:
+{page_text}"""
+
 print('Calling Gemini...')
 raw = call_gemini(PROMPT)
 data = extract_json(raw)
 games = data.get('games', [])
-print(f'Got {len(games)} games')
+print(f'Parsed {len(games)} games')
 
-football   = [g for g in games if g.get('sport', 'football') == 'football']
-other      = [g for g in games if g.get('sport', 'football') != 'football']
+football = [g for g in games if g.get('sport', 'football') == 'football']
+other    = [g for g in games if g.get('sport', 'football') != 'football']
 
 live_sec     = section_html('<span class="dot"></span> Live Now',
                             [g for g in football if g['status'] == 'live'])
@@ -157,7 +178,6 @@ upcoming_sec = section_html('&#9200; Kicking Off Soon',
                             [g for g in football if g['status'] == 'upcoming'])
 other_sec    = section_html('&#128250; Other Sports — On Israeli TV', other)
 
-# ── HTML template (no f-string — avoids escaping every CSS/JS brace) ──────────
 TEMPLATE = open(os.path.join(os.path.dirname(__file__), 'template.html'), encoding='utf-8').read()
 
 html = (TEMPLATE
@@ -171,4 +191,4 @@ html = (TEMPLATE
 out = os.path.join(os.path.dirname(__file__), '..', 'index.html')
 with open(out, 'w', encoding='utf-8') as f:
     f.write(html)
-print(f'Wrote index.html')
+print(f'Wrote index.html ({len(games)} games, source: {source_desc})')
