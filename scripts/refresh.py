@@ -23,7 +23,7 @@ def fetch_page(url):
 
 def call_llm(prompt):
     # GitHub Models — uses the GITHUB_TOKEN already present in every Actions run
-    for model in ['gpt-4o-mini', 'meta-llama-3.1-70b-instruct']:
+    for model in ['gpt-4o-mini', 'gpt-4o', 'Llama-3.1-70B-Instruct']:
         for attempt in range(3):
             try:
                 r = requests.post(
@@ -142,10 +142,12 @@ def section_html(title, games):
 print('Fetching livegames.co.il...')
 try:
     page_html = fetch_page('https://www.livegames.co.il/')
-    # Strip scripts/styles to save tokens, keep visible text structure
+    # Strip to plain text to minimise tokens
     page_text = re.sub(r'<script[^>]*>.*?</script>', '', page_html, flags=re.DOTALL)
     page_text = re.sub(r'<style[^>]*>.*?</style>', '', page_text, flags=re.DOTALL)
-    page_text = page_text[:50000]
+    page_text = re.sub(r'<[^>]+>', ' ', page_text)
+    page_text = re.sub(r'\s+', ' ', page_text).strip()
+    page_text = page_text[:8000]  # ~2000 tokens, well within free limits
     source_desc = 'HTML from livegames.co.il'
 except Exception as e:
     print(f'Fetch failed ({e}), falling back to knowledge cutoff data')
