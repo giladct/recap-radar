@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recap Radar</title>
+<title>World Cup 2026 — Recap Radar</title>
 <style>
   :root{
     --bg:#0D1117;
@@ -69,9 +69,9 @@
 <body>
 
 <div class="header">
-  <div class="eyebrow">Recap Radar</div>
+  <div class="eyebrow">FIFA World Cup 2026</div>
   <h1 class="title">Worth the Recap?</h1>
-  <p class="subtitle">Tap &#128065; to reveal one score at a time. <strong>Recap Heat</strong> &#128293;1–3 = how worth-watching it was.</p>
+  <p class="subtitle">Tap &#128065; to reveal a score. <strong>Recap Heat</strong> &#128293;1–3 = how worth watching it was.</p>
   <div class="legend">
     <span><i class="seg on-low" style="background:var(--heat-low)"></i> Quiet</span>
     <span><i class="seg on-mid" style="background:var(--heat-mid)"></i> Decent</span>
@@ -82,177 +82,546 @@
       <span class="toggle"><input type="checkbox" id="liveToggle"><span class="slider"></span></span>
       Live now only
     </label>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="tvToggle"><span class="slider"></span></span>
-      On Israeli TV only
-    </label>
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px;">
     <button class="reset-btn" id="resetScores">&#128260; Hide all revealed scores</button>
-    <span style="font-family:Menlo,Consolas,monospace;font-size:11px;color:var(--muted);">&#128337; Updated 15:34 · June 12, 2026</span>
+    <span style="font-family:Menlo,Consolas,monospace;font-size:11px;color:var(--muted);">&#128337; Updated 15:40 · June 12, 2026</span>
   </div>
 </div>
 
 
-<div class="section">
-  <div class="section-title">&#9989; Full Time — Recap Heat</div>
-<div class="card" data-id="south-korea-czech-republic" data-tv="true" data-started-at="2026-06-12T05:00:00+03:00">
-  <div class="card-top"><span class="league">World Cup</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">2-1</span><span class="started-ago"></span></span><span class="channel">&#128250; כאן 11</span></div>
-  <div class="teams">צ'כיה - דרום קוריאה</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Exciting match with a close score</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%A6%27%D7%9B%D7%99%D7%94%20%D7%93%D7%A8%D7%95%D7%9D%20%D7%A7%D7%95%D7%A8%D7%99%D7%90%D7%94%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
-</div>
-</div>
 
 <div class="section">
-  <div class="section-title">&#9200; Kicking Off Soon</div>
-<div class="card" data-id="canada-bosnia-herzegovina" data-tv="true" data-started-at="2026-06-12T22:00:00+03:00">
-  <div class="card-top"><span class="league">World Cup</span><span class="live-meta-wrap"><span class="meta">22:00</span><span class="channel">&#128250; כאן 11</span></span></div>
-  <div class="teams">בוסניה-הרצגובינה - קנדה</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+  <div class="section-title">&#9200; Upcoming Matches</div>
+<div class="card" data-id="760415" data-started-at="2026-06-11T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">South Africa vs Mexico</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="derry-city-bohemians" data-started-at="2026-06-12T21:45:00+03:00">
-  <div class="card-top"><span class="league">Irish League</span><span class="live-meta-wrap"><span class="meta">21:45</span></span></div>
-  <div class="teams">בוהמיינס - דרי סיטי</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760414" data-started-at="2026-06-12T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Czechia vs South Korea</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="galway-dundalk" data-started-at="2026-06-12T21:45:00+03:00">
-  <div class="card-top"><span class="league">Irish League</span><span class="live-meta-wrap"><span class="meta">21:45</span></span></div>
-  <div class="teams">דונדלק - גלוואי</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760416" data-started-at="2026-06-12T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Bosnia-Herzegovina vs Canada</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="st-patrick-drogheda" data-started-at="2026-06-12T21:45:00+03:00">
-  <div class="card-top"><span class="league">Irish League</span><span class="live-meta-wrap"><span class="meta">21:45</span></span></div>
-  <div class="teams">דרוגהדה - סט. פטריק</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760417" data-started-at="2026-06-13T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Paraguay vs United States</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="waterford-sligo-rovers" data-started-at="2026-06-12T21:45:00+03:00">
-  <div class="card-top"><span class="league">Irish League</span><span class="live-meta-wrap"><span class="meta">21:45</span></span></div>
-  <div class="teams">סליגו רוברס - ווטרפורד</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760420" data-started-at="2026-06-13T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Switzerland vs Qatar</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="shelbourne-shemrock-rovers" data-started-at="2026-06-12T22:00:00+03:00">
-  <div class="card-top"><span class="league">Irish League</span><span class="live-meta-wrap"><span class="meta">22:00</span></span></div>
-  <div class="teams">שמרוק רוברס - שלבורן</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760419" data-started-at="2026-06-14T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Morocco vs Brazil</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="aagir-breidablik" data-started-at="2026-06-12T20:30:00+03:00">
-  <div class="card-top"><span class="league">Icelandic Cup</span><span class="live-meta-wrap"><span class="meta">20:30</span></span></div>
-  <div class="teams">בריידבליק - אאגיר</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760418" data-started-at="2026-06-14T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Scotland vs Haiti</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="akranes-vikingur-reykjavik" data-started-at="2026-06-12T23:15:00+03:00">
-  <div class="card-top"><span class="league">Icelandic League</span><span class="live-meta-wrap"><span class="meta">23:15</span></span></div>
-  <div class="teams">ויקינגור רייקיאוויק - אקרנס</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760421" data-started-at="2026-06-14T07:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">07:00</span></div>
+  <div class="teams">Türkiye vs Australia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="el-nasr-kazma" data-started-at="2026-06-12T20:45:00+03:00">
-  <div class="card-top"><span class="league">Kuwaiti League</span><span class="live-meta-wrap"><span class="meta">20:45</span></span></div>
-  <div class="teams">קאזמה - אל נאסר</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760422" data-started-at="2026-06-14T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Curaçao vs Germany</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="al-salmiya-al-kuwait" data-started-at="2026-06-12T20:45:00+03:00">
-  <div class="card-top"><span class="league">Kuwaiti League</span><span class="live-meta-wrap"><span class="meta">20:45</span></span></div>
-  <div class="teams">אל-כווית - אל-סאלמיאה</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760425" data-started-at="2026-06-14T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Japan vs Netherlands</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="baltika-baltic" data-started-at="2026-06-12T19:00:00+03:00">
-  <div class="card-top"><span class="league">Russian League</span><span class="live-meta-wrap"><span class="meta">19:00</span></span></div>
-  <div class="teams">באטה בוריסוב - בלשינה בוברויסק</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760423" data-started-at="2026-06-15T02:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:00</span></div>
+  <div class="teams">Ecuador vs Ivory Coast</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
+<div class="card" data-id="760424" data-started-at="2026-06-15T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Tunisia vs Sweden</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-
-<div class="section">
-  <div class="section-title">&#128250; Other Sports — On Israeli TV</div>
-<div class="card" data-id="maccabi-tel-aviv-holon" data-live="true" data-tv="true" data-started-at="2026-06-12T15:00:00+03:00">
-  <div class="card-top"><span class="league">Winner League Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">30-20</span><span class="meta live"><span class="dot"></span> Q2</span><span class="started-ago"></span></span><span class="channel">&#128250; ספורט 5</span></div>
-  <div class="teams">הפועל חולון - מכבי תל אביב</div>
-  <div class="meta" style="margin-bottom:3px;">HEAT SO FAR (LIVE)</div><div class="heatbar"><div class="seg on-high"></div><div class="seg on-high"></div><div class="seg on-high"></div></div><div class="note">Intense playoff battle ongoing</div>
+<div class="card" data-id="760428" data-started-at="2026-06-15T19:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">19:00</span></div>
+  <div class="teams">Cape Verde vs Spain</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="valencia-joventut-badalona" data-tv="true" data-started-at="2026-06-12T21:00:00+03:00">
-  <div class="card-top"><span class="league">Spanish Playoffs</span><span class="live-meta-wrap"><span class="meta">21:00</span><span class="channel">&#128250; ספורט 4</span></span></div>
-  <div class="teams">חובנטוד בדאלונה - ולנסיה</div>
-  <div class="note">Not started yet — heat rating will appear after full time.</div>
+<div class="card" data-id="760426" data-started-at="2026-06-15T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Egypt vs Belgium</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="zenit-lokomotiv-kuban" data-started-at="2026-06-12T00:00:00+03:00">
-  <div class="card-top"><span class="league">VTB United League Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">76-84</span><span class="started-ago"></span></span></div>
-  <div class="teams">לוקומוטיב קובאן - זניט סט. פטרסבורג</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Thrilling finish in VTB playoffs</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%9C%D7%95%D7%A7%D7%95%D7%9E%D7%95%D7%98%D7%99%D7%91%20%D7%A7%D7%95%D7%91%D7%90%D7%9F%20%D7%96%D7%A0%D7%99%D7%98%20%D7%A1%D7%98.%20%D7%A4%D7%98%D7%A8%D7%A1%D7%91%D7%95%D7%A8%D7%92%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760429" data-started-at="2026-06-16T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Uruguay vs Saudi Arabia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="pittsburgh-pirates-dodgers" data-tv="true" data-started-at="2026-06-12T01:40:00+03:00">
-  <div class="card-top"><span class="league">MLB</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">6-8</span><span class="started-ago"></span></span><span class="channel">&#128250; ספורט 5+ לייב</span></div>
-  <div class="teams">לוס אנג'לס דודג'רס - פיטסבורג פיראטס</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Exciting MLB game concluded</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%9C%D7%95%D7%A1%20%D7%90%D7%A0%D7%92%27%D7%9C%D7%A1%20%D7%93%D7%95%D7%93%D7%92%27%D7%A8%D7%A1%20%D7%A4%D7%99%D7%98%D7%A1%D7%91%D7%95%D7%A8%D7%92%20%D7%A4%D7%99%D7%A8%D7%90%D7%98%D7%A1%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760427" data-started-at="2026-06-16T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">New Zealand vs Iran</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="carolina-hurricanes-golden-knights" data-tv="true" data-started-at="2026-06-12T03:00:00+03:00">
-  <div class="card-top"><span class="league">NHL Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">4-2</span><span class="started-ago"></span></span><span class="channel">&#128250; 5 סטארס</span></div>
-  <div class="teams">וגאס גולדן נייטס - קרוליינה הוריקנס</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">NHL playoff excitement</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%95%D7%92%D7%90%D7%A1%20%D7%92%D7%95%D7%9C%D7%93%D7%9F%20%D7%A0%D7%99%D7%99%D7%98%D7%A1%20%D7%A7%D7%A8%D7%95%D7%9C%D7%99%D7%99%D7%A0%D7%94%20%D7%94%D7%95%D7%A8%D7%99%D7%A7%D7%A0%D7%A1%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760432" data-started-at="2026-06-16T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Senegal vs France</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="olympiacos-panathinaikos">
-  <div class="card-top"><span class="league">Greek League Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">פנאתינאיקוס - אולימפיאקוס</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Rivalry match with strong performances</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%A4%D7%A0%D7%90%D7%AA%D7%99%D7%A0%D7%90%D7%99%D7%A7%D7%95%D7%A1%20%D7%90%D7%95%D7%9C%D7%99%D7%9E%D7%A4%D7%99%D7%90%D7%A7%D7%95%D7%A1%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760430" data-started-at="2026-06-17T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Norway vs Iraq</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="iberostar-barcelona">
-  <div class="card-top"><span class="league">Spanish Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">ברצלונה - איברוסטאר טנריפה</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Close contest with thrilling plays</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%91%D7%A8%D7%A6%D7%9C%D7%95%D7%A0%D7%94%20%D7%90%D7%99%D7%91%D7%A8%D7%95%D7%A1%D7%98%D7%90%D7%A8%20%D7%98%D7%A0%D7%A8%D7%99%D7%A4%D7%94%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760433" data-started-at="2026-06-17T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Algeria vs Argentina</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="olimpia-venezia">
-  <div class="card-top"><span class="league">Italian Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">ונציה - אולימפיה מילאנו</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Competitive game with great effort</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%95%D7%A0%D7%A6%D7%99%D7%94%20%D7%90%D7%95%D7%9C%D7%99%D7%9E%D7%A4%D7%99%D7%94%20%D7%9E%D7%99%D7%9C%D7%90%D7%A0%D7%95%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760431" data-started-at="2026-06-17T07:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">07:00</span></div>
+  <div class="teams">Jordan vs Austria</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="fenerbahce-besiktas">
-  <div class="card-top"><span class="league">Turkish League Playoffs</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">בשיקטאש - פנרבחצ'ה</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Tense match with fierce rivalry</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%91%D7%A9%D7%99%D7%A7%D7%98%D7%90%D7%A9%20%D7%A4%D7%A0%D7%A8%D7%91%D7%97%D7%A6%27%D7%94%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760435" data-started-at="2026-06-17T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Congo DR vs Portugal</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
+<div class="card" data-id="760437" data-started-at="2026-06-17T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Croatia vs England</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-
-<div class="section">
-  <div class="section-title">&#128197; Yesterday (June 11, 2026) — Recap Heat</div>
-<div class="card" data-id="qatar-switzerland">
-  <div class="card-top"><span class="league">World Cup</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">שוויץ - קטאר</div>
-  <div class="heatbar"><div class="seg on-high"></div><div class="seg on-high"></div><div class="seg on-high"></div></div><div class="note">Exciting match with high stakes</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%A9%D7%95%D7%95%D7%99%D7%A5%20%D7%A7%D7%98%D7%90%D7%A8%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760434" data-started-at="2026-06-18T02:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:00</span></div>
+  <div class="teams">Panama vs Ghana</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="usa-paraguay">
-  <div class="card-top"><span class="league">World Cup</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">פרגוואי - ארצות הברית</div>
-  <div class="heatbar"><div class="seg on-high"></div><div class="seg on-high"></div><div class="seg on-high"></div></div><div class="note">Intense game with thrilling moments</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%A4%D7%A8%D7%92%D7%95%D7%95%D7%90%D7%99%20%D7%90%D7%A8%D7%A6%D7%95%D7%AA%20%D7%94%D7%91%D7%A8%D7%99%D7%AA%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760436" data-started-at="2026-06-18T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Colombia vs Uzbekistan</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="lakenheath-reykjavik">
-  <div class="card-top"><span class="league">Icelandic Second Division</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">וסטרי - לייקניר רייקיאוויק</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Decisive match with strong plays</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%95%D7%A1%D7%98%D7%A8%D7%99%20%D7%9C%D7%99%D7%99%D7%A7%D7%A0%D7%99%D7%A8%20%D7%A8%D7%99%D7%99%D7%A7%D7%99%D7%90%D7%95%D7%95%D7%99%D7%A7%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760438" data-started-at="2026-06-18T19:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">19:00</span></div>
+  <div class="teams">South Africa vs Czechia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="longford-cobh">
-  <div class="card-top"><span class="league">Irish Second Division</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">קוב ראמבלרס - לונגפורד</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Exciting game with close score</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%A7%D7%95%D7%91%20%D7%A8%D7%90%D7%9E%D7%91%D7%9C%D7%A8%D7%A1%20%D7%9C%D7%95%D7%A0%D7%92%D7%A4%D7%95%D7%A8%D7%93%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760439" data-started-at="2026-06-18T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Bosnia-Herzegovina vs Switzerland</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="hjk-tampere">
-  <div class="card-top"><span class="league">Finnish League</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">טמפרה - ה.י.ק הלסינקי</div>
-  <div class="heatbar"><div class="seg on-mid"></div><div class="seg on-mid"></div><div class="seg"></div></div><div class="note">Thrilling match with high intensity</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%98%D7%9E%D7%A4%D7%A8%D7%94%20%D7%94.%D7%99.%D7%A7%20%D7%94%D7%9C%D7%A1%D7%99%D7%A0%D7%A7%D7%99%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760440" data-started-at="2026-06-19T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Qatar vs Canada</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
-<div class="card" data-id="maccabi-telaviv">
-  <div class="card-top"><span class="league">Israeli League</span><span class="live-meta-wrap"><button class="reveal-btn">&#128065; Score</button><span class="score">?-?</span><span class="started-ago"></span></span></div>
-  <div class="teams">הפועל תל אביב - מכבי תל אביב</div>
-  <div class="heatbar"><div class="seg on-high"></div><div class="seg on-high"></div><div class="seg on-high"></div></div><div class="note">Classic rivalry with dramatic finish</div><a class="recap-link" href="https://www.youtube.com/results?search_query=%D7%94%D7%A4%D7%95%D7%A2%D7%9C%20%D7%AA%D7%9C%20%D7%90%D7%91%D7%99%D7%91%20%D7%9E%D7%9B%D7%91%D7%99%20%D7%AA%D7%9C%20%D7%90%D7%91%D7%99%D7%91%20%D7%AA%D7%A7%D7%A6%D7%99%D7%A8" target="_blank" rel="noopener">&#9654; Watch recap</a>
+<div class="card" data-id="760441" data-started-at="2026-06-19T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">South Korea vs Mexico</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760442" data-started-at="2026-06-19T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Australia vs United States</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760445" data-started-at="2026-06-20T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Morocco vs Scotland</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760444" data-started-at="2026-06-20T03:30:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:30</span></div>
+  <div class="teams">Haiti vs Brazil</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760443" data-started-at="2026-06-20T06:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">06:00</span></div>
+  <div class="teams">Paraguay vs Türkiye</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760447" data-started-at="2026-06-20T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Sweden vs Netherlands</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760448" data-started-at="2026-06-20T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Ivory Coast vs Germany</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760446" data-started-at="2026-06-21T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Curaçao vs Ecuador</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760449" data-started-at="2026-06-21T07:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">07:00</span></div>
+  <div class="teams">Japan vs Tunisia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760453" data-started-at="2026-06-21T19:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">19:00</span></div>
+  <div class="teams">Saudi Arabia vs Spain</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760451" data-started-at="2026-06-21T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Iran vs Belgium</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760450" data-started-at="2026-06-22T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Cape Verde vs Uruguay</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760452" data-started-at="2026-06-22T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Egypt vs New Zealand</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760456" data-started-at="2026-06-22T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Austria vs Argentina</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760457" data-started-at="2026-06-23T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">Iraq vs France</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760454" data-started-at="2026-06-23T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Senegal vs Norway</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760455" data-started-at="2026-06-23T06:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">06:00</span></div>
+  <div class="teams">Algeria vs Jordan</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760461" data-started-at="2026-06-23T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Uzbekistan vs Portugal</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760458" data-started-at="2026-06-23T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Ghana vs England</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760460" data-started-at="2026-06-24T02:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:00</span></div>
+  <div class="teams">Croatia vs Panama</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760459" data-started-at="2026-06-24T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Congo DR vs Colombia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760462" data-started-at="2026-06-24T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Qatar vs Bosnia-Herzegovina</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760463" data-started-at="2026-06-24T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Canada vs Switzerland</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760464" data-started-at="2026-06-25T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Haiti vs Morocco</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760465" data-started-at="2026-06-25T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Brazil vs Scotland</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760467" data-started-at="2026-06-25T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Mexico vs Czechia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760466" data-started-at="2026-06-25T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">South Korea vs South Africa</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760473" data-started-at="2026-06-25T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Ivory Coast vs Curaçao</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760468" data-started-at="2026-06-25T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Germany vs Ecuador</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760471" data-started-at="2026-06-26T02:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:00</span></div>
+  <div class="teams">Sweden vs Japan</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760472" data-started-at="2026-06-26T02:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:00</span></div>
+  <div class="teams">Netherlands vs Tunisia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760469" data-started-at="2026-06-26T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Australia vs Paraguay</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760470" data-started-at="2026-06-26T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">United States vs Türkiye</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760475" data-started-at="2026-06-26T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">France vs Norway</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760474" data-started-at="2026-06-26T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Iraq vs Senegal</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760478" data-started-at="2026-06-27T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Saudi Arabia vs Cape Verde</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760479" data-started-at="2026-06-27T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Spain vs Uruguay</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760476" data-started-at="2026-06-27T06:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">06:00</span></div>
+  <div class="teams">Iran vs Egypt</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760477" data-started-at="2026-06-27T06:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">06:00</span></div>
+  <div class="teams">Belgium vs New Zealand</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760480" data-started-at="2026-06-28T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">Ghana vs Croatia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760485" data-started-at="2026-06-28T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">England vs Panama</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760481" data-started-at="2026-06-28T02:30:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:30</span></div>
+  <div class="teams">Portugal vs Colombia</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760482" data-started-at="2026-06-28T02:30:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:30</span></div>
+  <div class="teams">Uzbekistan vs Congo DR</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760484" data-started-at="2026-06-28T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Austria vs Algeria</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760483" data-started-at="2026-06-28T05:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">05:00</span></div>
+  <div class="teams">Argentina vs Jordan</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760486" data-started-at="2026-06-28T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Group B 2nd Place vs Group A 2nd Place</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760487" data-started-at="2026-06-29T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Group F 2nd Place vs Group C Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760489" data-started-at="2026-06-29T23:30:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:30</span></div>
+  <div class="teams">Third Place Group A/B/C/D/F vs Group E Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760488" data-started-at="2026-06-30T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Group C 2nd Place vs Group F Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760490" data-started-at="2026-06-30T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Group I 2nd Place vs Group E 2nd Place</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760492" data-started-at="2026-07-01T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">Third Place Group C/D/F/G/H vs Group I Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760491" data-started-at="2026-07-01T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Third Place Group C/E/F/H/I vs Group A Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760495" data-started-at="2026-07-01T19:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">19:00</span></div>
+  <div class="teams">Third Place Group E/H/I/J/K vs Group L Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760493" data-started-at="2026-07-01T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Third Place Group A/E/H/I/J vs Group G Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760494" data-started-at="2026-07-02T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Third Place Group B/E/F/I/J vs Group D Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760497" data-started-at="2026-07-02T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Group J 2nd Place vs Group H Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760496" data-started-at="2026-07-03T02:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">02:00</span></div>
+  <div class="teams">Group L 2nd Place vs Group K 2nd Place</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760498" data-started-at="2026-07-03T06:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">06:00</span></div>
+  <div class="teams">Third Place Group E/F/G/I/J vs Group B Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760499" data-started-at="2026-07-03T21:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">21:00</span></div>
+  <div class="teams">Group G 2nd Place vs Group D 2nd Place</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760500" data-started-at="2026-07-04T01:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">01:00</span></div>
+  <div class="teams">Group H 2nd Place vs Group J Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760501" data-started-at="2026-07-04T04:30:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:30</span></div>
+  <div class="teams">Third Place Group D/E/I/J/L vs Group K Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760502" data-started-at="2026-07-04T20:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">20:00</span></div>
+  <div class="teams">Round of 32 3 Winner vs Round of 32 1 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760503" data-started-at="2026-07-05T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">Round of 32 5 Winner vs Round of 32 2 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760504" data-started-at="2026-07-05T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Round of 32 6 Winner vs Round of 32 4 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760505" data-started-at="2026-07-06T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Round of 32 8 Winner vs Round of 32 7 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760506" data-started-at="2026-07-06T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Round of 32 12 Winner vs Round of 32 11 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760507" data-started-at="2026-07-07T03:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">03:00</span></div>
+  <div class="teams">Round of 32 10 Winner vs Round of 32 9 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760509" data-started-at="2026-07-07T19:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">19:00</span></div>
+  <div class="teams">Round of 32 16 Winner vs Round of 32 14 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760508" data-started-at="2026-07-07T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Round of 32 15 Winner vs Round of 32 13 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760510" data-started-at="2026-07-09T23:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">23:00</span></div>
+  <div class="teams">Round of 16 2 Winner vs Round of 16 1 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760511" data-started-at="2026-07-10T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Round of 16 6 Winner vs Round of 16 5 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760512" data-started-at="2026-07-12T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">Round of 16 4 Winner vs Round of 16 3 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760513" data-started-at="2026-07-12T04:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">04:00</span></div>
+  <div class="teams">Round of 16 8 Winner vs Round of 16 7 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760514" data-started-at="2026-07-14T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Quarterfinal 2 Winner vs Quarterfinal 1 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760515" data-started-at="2026-07-15T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Quarterfinal 4 Winner vs Quarterfinal 3 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760516" data-started-at="2026-07-19T00:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">00:00</span></div>
+  <div class="teams">Semifinal 2 Loser vs Semifinal 1 Loser</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
+</div>
+<div class="card" data-id="760517" data-started-at="2026-07-19T22:00:00+03:00">
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="meta">22:00</span></div>
+  <div class="teams">Semifinal 2 Winner vs Semifinal 1 Winner</div>
+  <div class="note upcoming-note">Score hidden until revealed.</div>
 </div>
 </div>
 
 
 <footer>
-  Auto-updated: June 12, 2026, 15:34 Israel time &middot; livegames.co.il
+  Auto-updated: June 12, 2026, 15:40 Israel time &middot; data: ESPN
 </footer>
 
 <script>
   const liveToggle = document.getElementById('liveToggle');
-  const tvToggle   = document.getElementById('tvToggle');
 
   document.addEventListener('click', function(e){
     const btn = e.target.closest('.reveal-btn');
@@ -267,9 +636,7 @@
     document.querySelectorAll('.section').forEach(function(section){
       let visible = 0;
       section.querySelectorAll('.card').forEach(function(card){
-        let show = true;
-        if (liveToggle.checked && card.dataset.live !== 'true') show = false;
-        if (tvToggle.checked   && card.dataset.tv   !== 'true') show = false;
+        const show = !liveToggle.checked || card.dataset.live === 'true';
         card.style.display = show ? '' : 'none';
         if (show) visible++;
       });
@@ -278,7 +645,6 @@
   }
 
   liveToggle.addEventListener('change', applyFilters);
-  tvToggle.addEventListener('change', applyFilters);
 
   function formatSince(ms, isLive){
     const mins = Math.max(0, Math.floor(ms / 60000));
