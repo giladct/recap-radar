@@ -38,7 +38,6 @@ def fetch_pages():
         game_view = page.evaluate("() => { const el = document.getElementById('GameResultView'); return el ? el.innerText.trim() : null; }")
         scores_text = (re.sub(r'\s+', ' ', game_view)[:8000] if game_view and len(game_view) > 100
                        else strip_html(page.content())[:5000])
-        print(f'Today URL: {page.url}')
 
         # Today: שידורים (TV broadcasts) tab
         tv_text = ''
@@ -49,95 +48,20 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: use changeDateGames() JS function — found via window inspection
+        # Yesterday: click the .CalLeft (previous day) button — discovered via jQuery event inspection
         yesterday_text = ''
         try:
             page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
-
-            # Capture which element classes hold today's game results
-            # (so we can target the same container after date change)
-            game_container_classes = page.evaluate('''() => {
-                const candidates = ['#gameResults', '#gamesDiv', '.games-container',
-                    '#tblGames', '#tblResults', '#gamesList', '.gamesList',
-                    '#divGames', '#divResults', '#mainContent', '#mainResults'];
-                for (const sel of candidates) {
-                    const el = document.querySelector(sel);
-                    if (el && el.innerText.trim().length > 100) return sel + ' (found)';
-                }
-                // fallback: find div with most text content
-                let best = null, bestLen = 0;
-                document.querySelectorAll('div[id]').forEach(d => {
-                    const t = d.innerText.trim();
-                    if (t.length > bestLen && t.length < 50000) {
-                        bestLen = t.length; best = '#' + d.id + ' (' + t.length + ')';
-                    }
-                });
-                return best || 'not found';
-            }''')
-            print(f'Game container: {game_container_classes}')
-
-            # Get the integer day counter and winner_program, then call showDay(yesterday)
-            page_data = page.evaluate('''() => ({
-                todayDate: typeof todayDate !== "undefined" ? todayDate : null,
-                winnerProgram: ($(".WinnerArea").data("program") || $(".GamesResultsTable").data("winner-program") || ""),
-            })''')
-            today_date_int = page_data.get('todayDate')
-            winner_program = page_data.get('winnerProgram', '')
-            print(f'todayDate={today_date_int}, winnerProgram={winner_program!r}')
-
-            if today_date_int is not None:
-                yest_date_int = int(today_date_int) - 1
-                print(f'Fetching Days.ashx?date={yest_date_int} via in-page fetch()...')
-
-                # Click the .CalLeft (previous day) button
-                print('Clicking .CalLeft (prev day)...')
-                before_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0, 80) : ''; }")
-                page.click('.CalLeft', timeout=5000)
-                # Wait for ShowResultTablediv content to change
-                try:
-                    page.wait_for_function(
-                        f"() => {{ const el = document.querySelector('.ShowResultTablediv'); return el && el.innerText.trim().slice(0,80) !== {repr(before_text)}; }}",
-                        timeout=20000
-                    )
-                    print('ShowResultTablediv updated after CalLeft click')
-                except Exception as we:
-                    print(f'Wait for CalLeft update timed out: {we}')
-
-                game_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim() : null; }")
-                grv_len = len(game_text) if game_text else 0
-                print(f'.ShowResultTablediv after CalLeft: {grv_len} chars')
-                if game_text and grv_len > 500:
-                    yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
-                    print(f'Got yesterday via CalLeft button!')
-                page.evaluate(f'showDay({yest_date_int}, null, 1)')
-                # Wait for .ShowResultTablediv to be populated
-                try:
-                    page.wait_for_function(
-                        "() => document.querySelector('.ShowResultTablediv') && document.querySelector('.ShowResultTablediv').innerText.trim().length > 500",
-                        timeout=20000
-                    )
-                    print('ShowResultTablediv loaded')
-                except Exception as we:
-                    print(f'Wait timed out: {we}')
-
-                game_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim() : null; }")
-                grv_len = len(game_text) if game_text else 0
-                print(f'.ShowResultTablediv: {grv_len} chars')
-                if game_text and grv_len > 200:
-                    yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
-                    print(f'Got yesterday from .ShowResultTablediv')
-                else:
-                    print('ShowResultTablediv empty; trying direct Days.ashx fetch')
-                    # Direct fetch of the data endpoint
-                    ashx_url = f'https://www.livegames.co.il/handlers/Days.ashx?date={yest_date_int}&winner_program={winner_program}'
-                    print(f'Fetching: {ashx_url}')
-                    page.goto(ashx_url, wait_until='networkidle', timeout=20000)
-                    yesterday_text = strip_html(page.content())[:8000]
-                    print(f'Direct ashx fetch: {len(yesterday_text)} chars')
-            else:
-                print('todayDate not found on page')
-
-            print(f'Yesterday sample: {yesterday_text[:400]!r}')
+            before_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0, 80) : ''; }")
+            page.click('.CalLeft', timeout=5000)
+            page.wait_for_function(
+                f"() => {{ const el = document.querySelector('.ShowResultTablediv'); return el && el.innerText.trim().slice(0,80) !== {repr(before_text)}; }}",
+                timeout=20000
+            )
+            game_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim() : null; }")
+            if game_text and len(game_text) > 500:
+                yesterday_text = re.sub(r'\s+', ' ', game_text)[:12000]
+                print(f'Yesterday: {len(game_text)} chars raw → {len(yesterday_text)} chars')
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
