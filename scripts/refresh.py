@@ -86,31 +86,37 @@ def fetch_pages():
             print(f'todayDate={today_date_int}, winnerProgram={winner_program!r}')
 
             if today_date_int is not None:
-                # Intercept to see if Days.ashx is actually called
-                days_requests = []
-                days_responses = []
-                page.on('request', lambda req: days_requests.append(req.url) if 'Days.ashx' in req.url else None)
-                page.on('response', lambda resp: days_responses.append((resp.url, resp.status)) if 'Days.ashx' in resp.url else None)
-
                 yest_date_int = int(today_date_int) - 1
-                print(f'Calling showDay({yest_date_int})...')
-                page.evaluate(f'showDay({yest_date_int}, null, 1)')
-                page.wait_for_load_state('networkidle', timeout=20000)
-                time.sleep(3)
-                print(f'Days.ashx requests: {days_requests}')
-                print(f'Days.ashx responses: {days_responses}')
+                print(f'Fetching Days.ashx?date={yest_date_int} via in-page fetch()...')
 
-                # Also try direct fetch of the endpoint
-                if not days_requests:
-                    print(f'No Days.ashx requests — trying direct navigation')
-                    direct_url = f'https://www.livegames.co.il/handlers/Days.ashx?date={yest_date_int}&winner_program={winner_program}'
-                    print(f'Fetching direct: {direct_url}')
-                    page.goto(direct_url, wait_until='networkidle', timeout=20000)
-                    direct_content = page.content()
-                    print(f'Direct Days.ashx content ({len(direct_content)} chars): {direct_content[:500]!r}')
-                    yesterday_text = strip_html(direct_content)[:8000]
+                # Use fetch() from within the page context — carries session cookies + correct Origin
+                ashx_html = page.evaluate(f'''async () => {{
+                    try {{
+                        const resp = await fetch('/handlers/Days.ashx?date={yest_date_int}&winner_program={winner_program}');
+                        return await resp.text();
+                    }} catch(e) {{
+                        return 'FETCH_ERROR: ' + String(e);
+                    }}
+                }}''')
+                print(f'Days.ashx response: {len(ashx_html)} chars, starts: {ashx_html[:300]!r}')
+
+                if ashx_html and not ashx_html.startswith('FETCH_ERROR') and len(ashx_html) > 200 and 'Runtime Error' not in ashx_html:
+                    yesterday_text = strip_html(ashx_html)[:8000]
+                    print(f'Got yesterday from Days.ashx in-page fetch')
                 else:
-                    pass  # Days.ashx was called, get the content below
+                    # Fallback: try day-2 (maybe numbering is different)
+                    yest2 = int(today_date_int) - 2
+                    print(f'Trying day-2 ({yest2})...')
+                    ashx_html2 = page.evaluate(f'''async () => {{
+                        try {{
+                            const resp = await fetch('/handlers/Days.ashx?date={yest2}&winner_program={winner_program}');
+                            return await resp.text();
+                        }} catch(e) {{ return 'FETCH_ERROR: ' + String(e); }}
+                    }}''')
+                    print(f'Day-2 response: {len(ashx_html2)} chars, starts: {ashx_html2[:200]!r}')
+                    if ashx_html2 and not ashx_html2.startswith('FETCH_ERROR') and len(ashx_html2) > 200 and 'Runtime Error' not in ashx_html2:
+                        yesterday_text = strip_html(ashx_html2)[:8000]
+                        print('Got yesterday from day-2 fetch')
                 page.evaluate(f'showDay({yest_date_int}, null, 1)')
                 # Wait for .ShowResultTablediv to be populated
                 try:
