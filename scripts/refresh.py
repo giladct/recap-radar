@@ -33,9 +33,11 @@ def fetch_pages():
         browser = p.chromium.launch(args=['--no-sandbox'])
         page = browser.new_page()
 
-        # Today: main scores page
+        # Today: main scores page — extract #GameResultView directly
         page.goto(BASE_URL, wait_until='networkidle', timeout=30000)
-        scores_text = strip_html(page.content())[:5000]
+        game_view = page.evaluate("() => { const el = document.getElementById('GameResultView'); return el ? el.innerText.trim() : null; }")
+        scores_text = (re.sub(r'\s+', ' ', game_view)[:8000] if game_view and len(game_view) > 100
+                       else strip_html(page.content())[:5000])
         print(f'Today URL: {page.url}')
 
         # Today: שידורים (TV broadcasts) tab
@@ -86,24 +88,18 @@ def fetch_pages():
             new_ajax = [u for u in ajax_urls if 'livegames' in u]
             print(f'AJAX calls after changeDateGames: {new_ajax}')
 
-            # Try to get just the games section
+            # Extract from #GameResultView — the main game content element
             game_text = page.evaluate('''() => {
-                const ids = ['gameResults','gamesDiv','divGames','divResults','tblGames',
-                             'tblResults','gamesList','mainContent','articlesupdates',
-                             'UpdatePanel1','divContent'];
-                for (const id of ids) {
-                    const el = document.getElementById(id);
-                    if (el && el.innerText.trim().length > 100) return el.innerText.trim();
-                }
-                return null;
+                const el = document.getElementById('GameResultView');
+                return el ? el.innerText.trim() : null;
             }''')
             if game_text and len(game_text) > 200:
                 yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
-                print(f'Got yesterday from element: {len(yesterday_text)} chars')
+                print(f'Got yesterday from #GameResultView: {len(yesterday_text)} chars')
             else:
                 yesterday_text = strip_html(page.content())[:8000]
-                print(f'Got yesterday from full page: {len(yesterday_text)} chars')
-            print(f'Yesterday sample (mid): {yesterday_text[300:700]!r}')
+                print(f'Fallback: got yesterday from full page: {len(yesterday_text)} chars')
+            print(f'Yesterday sample: {yesterday_text[:400]!r}')
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
@@ -125,7 +121,7 @@ def call_llm(prompt):
                     json={
                         'model': model,
                         'messages': [{'role': 'user', 'content': prompt}],
-                        'max_tokens': 7000,
+                        'max_tokens': 10000,
                         'temperature': 0.1,
                     },
                     timeout=90
