@@ -3,7 +3,7 @@ import os, json, re, time, requests
 from datetime import datetime, timezone, timedelta
 from urllib.parse import quote
 
-GEMINI_KEY = os.environ.get('GEMINI_API_KEY', '')
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 IL = timezone(timedelta(hours=3))
 now = datetime.now(IL)
 TODAY = now.strftime('%B %d, %Y')
@@ -21,34 +21,39 @@ def fetch_page(url):
     return r.text
 
 
-def call_gemini(prompt):
-    for model in ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-exp']:
+def call_llm(prompt):
+    # GitHub Models — uses the GITHUB_TOKEN already present in every Actions run
+    for model in ['gpt-4o-mini', 'meta-llama-3.1-70b-instruct']:
         for attempt in range(3):
             try:
                 r = requests.post(
-                    f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_KEY}',
+                    'https://models.inference.ai.azure.com/chat/completions',
+                    headers={
+                        'Authorization': f'Bearer {GITHUB_TOKEN}',
+                        'Content-Type': 'application/json',
+                    },
                     json={
-                        'contents': [{'role': 'user', 'parts': [{'text': prompt}]}],
-                        'generationConfig': {'maxOutputTokens': 4000, 'temperature': 0.1}
+                        'model': model,
+                        'messages': [{'role': 'user', 'content': prompt}],
+                        'max_tokens': 4000,
+                        'temperature': 0.1,
                     },
                     timeout=90
                 )
                 if r.status_code == 429:
                     wait = 15 * (attempt + 1)
-                    print(f'{model} rate-limited (429), body: {r.text[:300]}')
-                    print(f'  waiting {wait}s...')
+                    print(f'{model} rate-limited, waiting {wait}s...')
                     time.sleep(wait)
                     continue
                 if not r.ok:
                     print(f'{model} HTTP {r.status_code}: {r.text[:300]}')
-                    break  # try next model, this one won't work
-                parts = r.json()['candidates'][0]['content']['parts']
+                    break
                 print(f'OK: {model}')
-                return '\n'.join(p.get('text', '') for p in parts if p.get('text'))
+                return r.json()['choices'][0]['message']['content']
             except Exception as e:
                 print(f'{model} attempt {attempt+1} error: {e}')
                 time.sleep(5)
-    raise RuntimeError('All Gemini models failed')
+    raise RuntimeError('All models failed')
 
 
 def extract_json(text):
@@ -164,8 +169,8 @@ Rules:
 Page content:
 {page_text}"""
 
-print('Calling Gemini...')
-raw = call_gemini(PROMPT)
+print('Calling LLM...')
+raw = call_llm(PROMPT)
 data = extract_json(raw)
 games = data.get('games', [])
 print(f'Parsed {len(games)} games')
