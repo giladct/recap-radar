@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recap Radar</title>
+<style>
+  :root{
+    --bg:#0D1117;
+    --card:#161B22;
+    --border:#262C36;
+    --text:#E6EDF3;
+    --muted:#7D8590;
+    --heat-low:#4A90D9;
+    --heat-mid:#F2A83B;
+    --heat-high:#FF5C39;
+    --live:#3FB950;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;padding-bottom:40px;}
+  .header{padding:16px 14px 14px;border-bottom:1px solid var(--border);}
+  .eyebrow{font-family:"Arial Narrow",sans-serif;letter-spacing:0.18em;text-transform:uppercase;font-size:11px;color:var(--muted);margin-bottom:6px;}
+  .title{font-family:"Arial Narrow",Helvetica,sans-serif;font-weight:800;font-size:30px;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 6px;}
+  .subtitle{font-size:13px;color:var(--muted);line-height:1.5;max-width:480px;}
+  .legend{margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);}
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .legend .seg{width:14px;height:6px;border-radius:3px;display:inline-block;}
+  .section{padding:10px 14px;}
+  .section-title{font-family:"Arial Narrow",Helvetica,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;align-items:center;gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(63,185,80,0.6);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,185,80,0.5);}70%{box-shadow:0 0 0 7px rgba(63,185,80,0);}100%{box-shadow:0 0 0 0 rgba(63,185,80,0);}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:6px;}
+  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:3px;}
+  .league{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .meta{font-family:Menlo,Consolas,monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+  .meta.live{color:var(--live);font-weight:600;display:flex;align-items:center;gap:5px;}
+  .teams{direction:rtl;text-align:right;font-size:15px;font-weight:600;margin:2px 0 5px;unicode-bidi:plaintext;line-height:1.3;}
+  .heatbar{display:flex;gap:4px;margin-bottom:4px;}
+  .seg{height:5px;flex:1;border-radius:3px;background:#21262E;}
+  .seg.on-low{background:var(--heat-low);}
+  .seg.on-mid{background:var(--heat-mid);}
+  .seg.on-high{background:var(--heat-high);}
+  .note{font-size:12px;color:var(--muted);line-height:1.35;}
+  .note.postponed{font-style:italic;}
+  .toggles-row{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:14px;}
+  .toggle-wrap{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;}
+  .toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle .slider{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:background .2s;}
+  .toggle .slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;}
+  .toggle input:checked + .slider{background:var(--heat-high);}
+  .toggle input:checked + .slider::before{transform:translateX(18px);}
+  .score{font-family:Menlo,Consolas,monospace;font-weight:700;font-size:13px;color:var(--text);display:none;letter-spacing:0.05em;direction:ltr;}
+  .card.show-score .score{display:inline-block;}
+  .reveal-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;font-size:11px;padding:2px 9px;line-height:1.6;cursor:pointer;font-family:inherit;}
+  .reveal-btn:active{border-color:var(--heat-high);color:var(--text);}
+  .card.show-score .reveal-btn{display:none;}
+  .reset-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+  .reset-btn:active{border-color:var(--heat-high);color:var(--text);}
+  .live-meta-wrap{display:flex;align-items:center;gap:8px;}
+  .started-ago{font-family:Menlo,Consolas,monospace;font-size:10px;color:var(--muted);}
+  .channel{font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.04em;padding:2px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);white-space:nowrap;}
+  .recap-link{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:11px;font-weight:600;color:var(--heat-high);text-decoration:none;border:1px solid var(--border);padding:4px 10px;border-radius:999px;}
+  .recap-link:active{border-color:var(--heat-high);}
+  .card.show-score .recap-link{display:none;}
+  footer{padding:18px;color:var(--muted);font-size:11px;text-align:center;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Recap Radar</div>
+  <h1 class="title">Worth the Recap?</h1>
+  <p class="subtitle">Tap &#128065; to reveal one score at a time. <strong>Recap Heat</strong> &#128293;1–3 = how worth-watching it was.</p>
+  <div class="legend">
+    <span><i class="seg on-low" style="background:var(--heat-low)"></i> Quiet</span>
+    <span><i class="seg on-mid" style="background:var(--heat-mid)"></i> Decent</span>
+    <span><i class="seg on-high" style="background:var(--heat-high)"></i> Don't miss it</span>
+  </div>
+  <div class="toggles-row">
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="liveToggle"><span class="slider"></span></span>
+      Live now only
+    </label>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="tvToggle"><span class="slider"></span></span>
+      On Israeli TV only
+    </label>
+  </div>
+  <button class="reset-btn" id="resetScores" style="margin-top:10px;">&#128260; Hide all revealed scores</button>
+</div>
+
+%%LIVE%%
+%%FINISHED%%
+%%UPCOMING%%
+%%OTHER%%
+
+<footer>
+  Auto-updated: %%TODAY%%, %%SNAPSHOT%% Israel time &middot; livegames.co.il
+</footer>
+
+<script>
+  const liveToggle = document.getElementById('liveToggle');
+  const tvToggle   = document.getElementById('tvToggle');
+
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.reveal-btn');
+    if (btn) btn.closest('.card').classList.add('show-score');
+  });
+
+  document.getElementById('resetScores').addEventListener('click', function(){
+    document.querySelectorAll('.card.show-score').forEach(c => c.classList.remove('show-score'));
+  });
+
+  function applyFilters(){
+    document.querySelectorAll('.section').forEach(function(section){
+      let visible = 0;
+      section.querySelectorAll('.card').forEach(function(card){
+        let show = true;
+        if (liveToggle.checked && card.dataset.live !== 'true') show = false;
+        if (tvToggle.checked   && card.dataset.tv   !== 'true') show = false;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      section.style.display = visible === 0 ? 'none' : '';
+    });
+  }
+
+  liveToggle.addEventListener('change', applyFilters);
+  tvToggle.addEventListener('change', applyFilters);
+
+  function formatSince(ms, isLive){
+    const mins = Math.max(0, Math.floor(ms / 60000));
+    const hrs  = Math.floor(mins / 60);
+    const rem  = mins % 60;
+    const span = mins < 60 ? `${mins}m` : (rem ? `${hrs}h ${rem}m` : `${hrs}h`);
+    return isLive ? (mins < 1 ? 'Live · just started' : `Live · ${span}`) : `~${span} ago`;
+  }
+
+  function updateStartedTimes(){
+    document.querySelectorAll('.card[data-started-at]').forEach(card => {
+      const span = card.querySelector('.started-ago');
+      if (!span) return;
+      span.textContent = formatSince(Date.now() - new Date(card.dataset.startedAt).getTime(), card.dataset.live === 'true');
+    });
+  }
+
+  updateStartedTimes();
+  setInterval(updateStartedTimes, 60000);
+</script>
+</body>
+</html>
