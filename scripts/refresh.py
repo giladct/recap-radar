@@ -89,44 +89,26 @@ def fetch_pages():
                 yest_date_int = int(today_date_int) - 1
                 print(f'Fetching Days.ashx?date={yest_date_int} via in-page fetch()...')
 
-                # Scan all elements for onclick handlers calling showDay
-                nav_elements = page.evaluate('''() => {
-                    const results = [];
-                    document.querySelectorAll('*').forEach(el => {
-                        const oc = el.getAttribute('onclick') || '';
-                        if (oc.includes('showDay') || oc.includes('prevDay') || oc.includes('nextDay')) {
-                            results.push({
-                                tag: el.tagName,
-                                id: el.id,
-                                cls: el.className,
-                                onclick: oc.slice(0, 200),
-                                text: el.innerText.trim().slice(0, 30)
-                            });
-                        }
-                    });
-                    return results;
-                }''')
-                print(f'Elements with showDay onclick: {nav_elements}')
+                # Click the .CalLeft (previous day) button
+                print('Clicking .CalLeft (prev day)...')
+                before_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0, 80) : ''; }")
+                page.click('.CalLeft', timeout=5000)
+                # Wait for ShowResultTablediv content to change
+                try:
+                    page.wait_for_function(
+                        f"() => {{ const el = document.querySelector('.ShowResultTablediv'); return el && el.innerText.trim().slice(0,80) !== {repr(before_text)}; }}",
+                        timeout=20000
+                    )
+                    print('ShowResultTablediv updated after CalLeft click')
+                except Exception as we:
+                    print(f'Wait for CalLeft update timed out: {we}')
 
-                # Also check for jQuery event listeners (harder to detect)
-                # Try clicking an element at a predictable position (left arrow area)
-                # Or use jQuery's _data to find event handlers
-                jquery_handlers = page.evaluate('''() => {
-                    const found = [];
-                    try {
-                        document.querySelectorAll('*').forEach(el => {
-                            const data = jQuery && jQuery._data && jQuery._data(el, 'events');
-                            if (data && data.click) {
-                                const oc = data.click.map(h => h.handler.toString().slice(0, 100)).join('|');
-                                if (oc.includes('showDay') || oc.includes('Day')) {
-                                    found.push({tag: el.tagName, id: el.id, cls: el.className, handler: oc.slice(0, 150)});
-                                }
-                            }
-                        });
-                    } catch(e) { found.push('error: ' + e); }
-                    return found.slice(0, 10);
-                }''')
-                print(f'jQuery click handlers with Day: {jquery_handlers}')
+                game_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim() : null; }")
+                grv_len = len(game_text) if game_text else 0
+                print(f'.ShowResultTablediv after CalLeft: {grv_len} chars')
+                if game_text and grv_len > 500:
+                    yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
+                    print(f'Got yesterday via CalLeft button!')
                 page.evaluate(f'showDay({yest_date_int}, null, 1)')
                 # Wait for .ShowResultTablediv to be populated
                 try:
