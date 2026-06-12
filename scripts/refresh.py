@@ -9,13 +9,8 @@ now = datetime.now(IL)
 yesterday = now - timedelta(days=1)
 TODAY = now.strftime('%B %d, %Y')
 YESTERDAY = yesterday.strftime('%B %d, %Y')
-YESTERDAY_DATE = yesterday.strftime('%Y-%m-%d')
-SNAPSHOT = now.strftime('%H:%M')
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-    'Accept-Language': 'he-IL,he;q=0.9,en;q=0.8',
-}
+SNAPSHOT = now.strftime('%H:%M')
 
 
 def strip_html(html):
@@ -242,7 +237,6 @@ print(f'Today: {len(today_games)} games')
 
 yest_games = []
 if yesterday_text:
-    print('Yesterday text sample:', yesterday_text[:300])
     print('Calling LLM for yesterday...')
     raw_yest = call_llm(YEST_PROMPT)
     yest_games = extract_json(raw_yest).get('games', [])
