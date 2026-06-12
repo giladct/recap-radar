@@ -20,7 +20,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - run: pip install requests
+      - run: pip install requests playwright
+      - run: playwright install chromium --with-deps
 
       - name: Generate index.html
         run: python scripts/refresh.py

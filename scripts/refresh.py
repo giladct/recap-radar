@@ -16,9 +16,14 @@ HEADERS = {
 
 
 def fetch_page(url):
-    r = requests.get(url, headers=HEADERS, timeout=30)
-    r.raise_for_status()
-    return r.text
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(args=['--no-sandbox'])
+        page = browser.new_page()
+        page.goto(url, wait_until='networkidle', timeout=30000)
+        content = page.content()
+        browser.close()
+    return content
 
 
 def call_llm(prompt):
