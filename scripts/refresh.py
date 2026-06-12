@@ -166,10 +166,18 @@ def card_html(g):
 
     # Format kickoff time in Israel timezone
     time_str = ''
+    date_str = ''
     if g.get('date'):
         try:
             dt = datetime.fromisoformat(g['date'].replace('Z', '+00:00')).astimezone(IL)
             time_str = dt.strftime('%H:%M')
+            today_il = datetime.now(IL).date()
+            if dt.date() == today_il:
+                date_str = 'Today'
+            elif dt.date() == today_il + timedelta(days=1):
+                date_str = 'Tomorrow'
+            else:
+                date_str = dt.strftime('%b %d')
             attrs += f' data-started-at="{dt.isoformat()}"'
         except Exception:
             pass
@@ -193,8 +201,9 @@ def card_html(g):
         right = ''
         body  = '<div class="note postponed">Postponed.</div>'
     else:
-        right = f'<span class="meta">{time_str or "TBD"}</span>'
-        body  = '<div class="note upcoming-note">Score hidden until revealed.</div>'
+        kickoff = f'{date_str} {time_str}'.strip() if (date_str or time_str) else 'TBD'
+        right = f'<span class="meta">{kickoff}</span>'
+        body  = ''
 
     return (f'<div class="card"{attrs}>\n'
             f'  <div class="card-top"><span class="league">{league}</span>{right}</div>\n'
@@ -213,21 +222,9 @@ def section_html(title, games):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 print('Fetching World Cup schedule from ESPN...')
-
-# Debug: check raw status of first few events
-try:
-    r = requests.get(f'{ESPN_BASE}/scoreboard?dates=20260612', timeout=15)
-    evs = r.json().get('events', [])
-    for ev in evs[:3]:
-        comp = ev['competitions'][0]
-        st = comp.get('status', {})
-        ev_st = ev.get('status', {})
-        print(f'Event: {ev.get("name")} | comp.status={st} | ev.status={ev_st}')
-except Exception as e:
-    print(f'Debug fetch failed: {e}')
-
 games = fetch_world_cup()
-print(f'Fetched {len(games)} games, statuses: {set(g["status"] for g in games)}')
+statuses = {s: sum(1 for g in games if g['status'] == s) for s in set(g['status'] for g in games)}
+print(f'Fetched {len(games)} games: {statuses}')
 
 # Apply heat ratings to finished games
 finished = [g for g in games if g['status'] == 'finished']
