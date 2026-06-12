@@ -89,34 +89,28 @@ def fetch_pages():
                 yest_date_int = int(today_date_int) - 1
                 print(f'Fetching Days.ashx?date={yest_date_int} via in-page fetch()...')
 
-                # Use fetch() from within the page context — carries session cookies + correct Origin
-                ashx_html = page.evaluate(f'''async () => {{
-                    try {{
-                        const resp = await fetch('/handlers/Days.ashx?date={yest_date_int}&winner_program={winner_program}');
-                        return await resp.text();
-                    }} catch(e) {{
-                        return 'FETCH_ERROR: ' + String(e);
-                    }}
-                }}''')
-                print(f'Days.ashx response: {len(ashx_html)} chars, starts: {ashx_html[:300]!r}')
-
-                if ashx_html and not ashx_html.startswith('FETCH_ERROR') and len(ashx_html) > 200 and 'Runtime Error' not in ashx_html:
-                    yesterday_text = strip_html(ashx_html)[:8000]
-                    print(f'Got yesterday from Days.ashx in-page fetch')
-                else:
-                    # Fallback: try day-2 (maybe numbering is different)
-                    yest2 = int(today_date_int) - 2
-                    print(f'Trying day-2 ({yest2})...')
-                    ashx_html2 = page.evaluate(f'''async () => {{
+                # Try to fetch Days.ashx with proper XMLHttpRequest headers (required by ASP.NET handler)
+                # Also try day-1 and day-2 since we're not sure of the numbering
+                for day_offset, test_day in [(1, yest_date_int), (2, int(today_date_int) - 2)]:
+                    ashx_html = page.evaluate(f'''async () => {{
                         try {{
-                            const resp = await fetch('/handlers/Days.ashx?date={yest2}&winner_program={winner_program}');
-                            return await resp.text();
-                        }} catch(e) {{ return 'FETCH_ERROR: ' + String(e); }}
+                            const resp = await fetch('/handlers/Days.ashx?date={test_day}&winner_program={winner_program}', {{
+                                headers: {{
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'text/html, */*; q=0.01'
+                                }}
+                            }});
+                            return [resp.status, await resp.text()];
+                        }} catch(e) {{
+                            return [0, 'FETCH_ERROR: ' + String(e)];
+                        }}
                     }}''')
-                    print(f'Day-2 response: {len(ashx_html2)} chars, starts: {ashx_html2[:200]!r}')
-                    if ashx_html2 and not ashx_html2.startswith('FETCH_ERROR') and len(ashx_html2) > 200 and 'Runtime Error' not in ashx_html2:
-                        yesterday_text = strip_html(ashx_html2)[:8000]
-                        print('Got yesterday from day-2 fetch')
+                    status, html = ashx_html[0], ashx_html[1]
+                    print(f'Days.ashx day={test_day} (offset-{day_offset}): status={status}, {len(html)} chars, starts: {html[:200]!r}')
+                    if status == 200 and len(html) > 500 and 'Runtime Error' not in html:
+                        yesterday_text = strip_html(html)[:8000]
+                        print(f'Got yesterday from Days.ashx (day offset -{day_offset})')
+                        break
                 page.evaluate(f'showDay({yest_date_int}, null, 1)')
                 # Wait for .ShowResultTablediv to be populated
                 try:
