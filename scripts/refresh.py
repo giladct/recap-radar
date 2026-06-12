@@ -86,27 +86,31 @@ def fetch_pages():
             print(f'todayDate={today_date_int}, winnerProgram={winner_program!r}')
 
             if today_date_int is not None:
-                # Verify: what date does the initial page show?
-                initial_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0,200) : null; }")
-                print(f'Initial .ShowResultTablediv (before nav): {initial_text!r}')
+                # Intercept to see if Days.ashx is actually called
+                days_requests = []
+                days_responses = []
+                page.on('request', lambda req: days_requests.append(req.url) if 'Days.ashx' in req.url else None)
+                page.on('response', lambda resp: days_responses.append((resp.url, resp.status)) if 'Days.ashx' in resp.url else None)
 
-                # Try two offsets and print both snippets to find the right one
-                for offset in [1, 2]:
-                    check_day = int(today_date_int) - offset
-                    page.evaluate(f'showDay({check_day}, null, 1)')
-                    try:
-                        page.wait_for_function(
-                            f"() => document.querySelector('.ShowResultTablediv') && document.querySelector('.ShowResultTablediv').innerText.trim().length > 500",
-                            timeout=15000
-                        )
-                    except Exception:
-                        pass
-                    t = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0,300) : null; }")
-                    print(f'showDay({check_day}) (offset -{offset}): {t!r}')
-
-                # Use offset 1 for now (may update after seeing output)
                 yest_date_int = int(today_date_int) - 1
-                print(f'Calling showDay({yest_date_int}) for real...')
+                print(f'Calling showDay({yest_date_int})...')
+                page.evaluate(f'showDay({yest_date_int}, null, 1)')
+                page.wait_for_load_state('networkidle', timeout=20000)
+                time.sleep(3)
+                print(f'Days.ashx requests: {days_requests}')
+                print(f'Days.ashx responses: {days_responses}')
+
+                # Also try direct fetch of the endpoint
+                if not days_requests:
+                    print(f'No Days.ashx requests — trying direct navigation')
+                    direct_url = f'https://www.livegames.co.il/handlers/Days.ashx?date={yest_date_int}&winner_program={winner_program}'
+                    print(f'Fetching direct: {direct_url}')
+                    page.goto(direct_url, wait_until='networkidle', timeout=20000)
+                    direct_content = page.content()
+                    print(f'Direct Days.ashx content ({len(direct_content)} chars): {direct_content[:500]!r}')
+                    yesterday_text = strip_html(direct_content)[:8000]
+                else:
+                    pass  # Days.ashx was called, get the content below
                 page.evaluate(f'showDay({yest_date_int}, null, 1)')
                 # Wait for .ShowResultTablediv to be populated
                 try:
