@@ -76,54 +76,47 @@ def fetch_pages():
             }''')
             print(f'Game container: {game_container_classes}')
 
-            # Inspect function source code to understand date nav mechanism
-            fn_sources = page.evaluate('''() => ({
-                prev: typeof prev === "function" ? prev.toString().slice(0,500) : "not found",
-                changeDateGames: typeof changeDateGames === "function" ? changeDateGames.toString().slice(0,500) : "not found",
-                showDay: typeof showDay === "function" ? showDay.toString().slice(0,500) : "not found",
-                ChosenDay: typeof ChosenDay !== "undefined" ? String(ChosenDay) : "not found",
-                currentDay: typeof currentDay !== "undefined" ? String(currentDay) : "not found",
-                todayDate: typeof todayDate !== "undefined" ? String(todayDate) : "not found",
+            # Get the integer day counter and winner_program, then call showDay(yesterday)
+            page_data = page.evaluate('''() => ({
+                todayDate: typeof todayDate !== "undefined" ? todayDate : null,
+                winnerProgram: ($(".WinnerArea").data("program") || $(".GamesResultsTable").data("winner-program") || ""),
             })''')
-            for k, v in fn_sources.items():
-                print(f'=== {k} ===')
-                print(v)
+            today_date_int = page_data.get('todayDate')
+            winner_program = page_data.get('winnerProgram', '')
+            print(f'todayDate={today_date_int}, winnerProgram={winner_program!r}')
 
-            # Intercept AJAX calls triggered by changeDateGames
-            ajax_urls = []
-            page.on('request', lambda req: ajax_urls.append(req.url))
+            if today_date_int is not None:
+                yest_date_int = int(today_date_int) - 1
+                print(f'Calling showDay({yest_date_int})...')
+                page.evaluate(f'showDay({yest_date_int}, null, 1)')
+                # Wait for .ShowResultTablediv to be populated
+                try:
+                    page.wait_for_function(
+                        "() => document.querySelector('.ShowResultTablediv') && document.querySelector('.ShowResultTablediv').innerText.trim().length > 500",
+                        timeout=20000
+                    )
+                    print('ShowResultTablediv loaded')
+                except Exception as we:
+                    print(f'Wait timed out: {we}')
 
-            yest_fmt = yesterday.strftime('%d/%m/%Y')
-            page.evaluate(f'changeDateGames("{yest_fmt}")')
-            page.wait_for_load_state('networkidle', timeout=20000)
-            time.sleep(4)
-
-            new_ajax = [u for u in ajax_urls if 'livegames' in u]
-            print(f'AJAX calls after changeDateGames: {new_ajax}')
-
-            # Wait for #GameResultView to be populated after AJAX update
-            try:
-                page.wait_for_function(
-                    "() => { const el = document.getElementById('GameResultView'); return el && el.innerText.trim().length > 500; }",
-                    timeout=15000
-                )
-                print('GameResultView populated after changeDateGames')
-            except Exception as we:
-                print(f'Wait for GameResultView timed out: {we}')
-
-            game_text = page.evaluate('''() => {
-                const el = document.getElementById('GameResultView');
-                return el ? el.innerText.trim() : null;
-            }''')
-            grv_len = len(game_text) if game_text else 0
-            print(f'GameResultView after changeDateGames: {grv_len} chars')
-            if game_text and grv_len > 200:
-                yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
-                print(f'Got yesterday from #GameResultView: {len(yesterday_text)} chars')
+                game_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim() : null; }")
+                grv_len = len(game_text) if game_text else 0
+                print(f'.ShowResultTablediv: {grv_len} chars')
+                if game_text and grv_len > 200:
+                    yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
+                    print(f'Got yesterday from .ShowResultTablediv')
+                else:
+                    print('ShowResultTablediv empty; trying direct Days.ashx fetch')
+                    # Direct fetch of the data endpoint
+                    ashx_url = f'https://www.livegames.co.il/handlers/Days.ashx?date={yest_date_int}&winner_program={winner_program}'
+                    print(f'Fetching: {ashx_url}')
+                    page.goto(ashx_url, wait_until='networkidle', timeout=20000)
+                    yesterday_text = strip_html(page.content())[:8000]
+                    print(f'Direct ashx fetch: {len(yesterday_text)} chars')
             else:
-                yesterday_text = strip_html(page.content())[:8000]
-                print(f'Fallback: got yesterday from full page: {len(yesterday_text)} chars')
-            print(f'Yesterday sample: {yesterday_text[:500]!r}')
+                print('todayDate not found on page')
+
+            print(f'Yesterday sample: {yesterday_text[:400]!r}')
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
