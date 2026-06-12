@@ -15,15 +15,34 @@ HEADERS = {
 }
 
 
-def fetch_page(url):
+def strip_html(html):
+    text = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+    text = re.sub(r'<style[^>]*>.*?</style>',  '', text,  flags=re.DOTALL)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def fetch_pages():
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         browser = p.chromium.launch(args=['--no-sandbox'])
         page = browser.new_page()
-        page.goto(url, wait_until='networkidle', timeout=30000)
-        content = page.content()
+
+        # Main scores page
+        page.goto('https://www.livegames.co.il/', wait_until='networkidle', timeout=30000)
+        scores_text = strip_html(page.content())[:5000]
+
+        # שידורים (TV broadcasts) tab
+        tv_text = ''
+        try:
+            page.click('a:has-text("שידורים")', timeout=5000)
+            page.wait_for_load_state('networkidle', timeout=10000)
+            tv_text = strip_html(page.content())[:4000]
+        except Exception as e:
+            print(f'TV tab not found: {e}')
+
         browser.close()
-    return content
+    return scores_text, tv_text
 
 
 def call_llm(prompt):
@@ -40,7 +59,7 @@ def call_llm(prompt):
                     json={
                         'model': model,
                         'messages': [{'role': 'user', 'content': prompt}],
-                        'max_tokens': 4000,
+                        'max_tokens': 7000,
                         'temperature': 0.1,
                     },
                     timeout=90
@@ -146,39 +165,37 @@ def section_html(title, games):
 # ── fetch livegames.co.il ──────────────────────────────────────────────────────
 print('Fetching livegames.co.il...')
 try:
-    page_html = fetch_page('https://www.livegames.co.il/')
-    # Strip to plain text to minimise tokens
-    page_text = re.sub(r'<script[^>]*>.*?</script>', '', page_html, flags=re.DOTALL)
-    page_text = re.sub(r'<style[^>]*>.*?</style>', '', page_text, flags=re.DOTALL)
-    page_text = re.sub(r'<[^>]+>', ' ', page_text)
-    page_text = re.sub(r'\s+', ' ', page_text).strip()
-    page_text = page_text[:8000]  # ~2000 tokens, well within free limits
-    source_desc = 'HTML from livegames.co.il'
-    print('=== PAGE TEXT SAMPLE ===')
-    print(page_text[:3000])
-    print('========================')
+    scores_text, tv_text = fetch_pages()
+    print(f'Scores text: {len(scores_text)} chars, TV text: {len(tv_text)} chars')
+    print('=== TV BROADCASTS SAMPLE ===')
+    print(tv_text[:1000])
+    print('============================')
+    source_desc = 'livegames.co.il'
 except Exception as e:
-    print(f'Fetch failed ({e}), falling back to knowledge cutoff data')
-    page_text = f'Could not fetch livegames.co.il: {e}'
+    print(f'Fetch failed ({e}), using empty content')
+    scores_text, tv_text = '', ''
     source_desc = 'fallback'
 
 PROMPT = f"""Today is {TODAY} Israel time.
 
-Below is content fetched from livegames.co.il (Israeli sports scores site).
-Extract ALL sports events listed for today and return ONLY raw JSON (no markdown fences):
+Below is content from livegames.co.il — SCORES section and TV BROADCASTS section.
+Extract ALL sports events and return ONLY raw JSON (no markdown fences):
 
 {{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
 
 Rules:
-- id: unique short kebab-case string per game, e.g. "canada-bosnia"
-- status: live=in play now, finished=full time, upcoming=not started, postponed=cancelled
+- id: unique short kebab-case string, e.g. "canada-bosnia"
+- status: live=in play, finished=full time, upcoming=not started, postponed=cancelled
 - heat 1=low drama 2=decent 3=must-watch — only for live/finished games
-- note must NOT contain score numbers
-- CRITICAL — tv: set tv=true and include the channel name for ANY game that has an Israeli TV channel listed next to it in the page content. Israeli channels include: כאן 11, ספורט 1, ספורט 2, ספורט 3, ספורט 4, ספורט 5, ספורט 5+, רשת 13, קשת 12. If a channel name appears near a game, that game MUST have tv=true.
-- sport=football for soccer, other values for other sports
+- note: max 8 words, no score numbers
+- CRITICAL — tv field: Cross-reference the TV BROADCASTS section below. Any game that appears in the TV BROADCASTS section MUST have tv=true and channel set to the channel name shown (e.g. "כאן 11", "ספורט 1", etc.)
+- sport=football for soccer
 
-Page content:
-{page_text}"""
+=== SCORES ===
+{scores_text}
+
+=== TV BROADCASTS ===
+{tv_text}"""
 
 print('Calling LLM...')
 raw = call_llm(PROMPT)
