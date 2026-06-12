@@ -6,7 +6,10 @@ from urllib.parse import quote
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 IL = timezone(timedelta(hours=3))
 now = datetime.now(IL)
+yesterday = now - timedelta(days=1)
 TODAY = now.strftime('%B %d, %Y')
+YESTERDAY = yesterday.strftime('%B %d, %Y')
+YESTERDAY_DATE = yesterday.strftime('%Y-%m-%d')
 SNAPSHOT = now.strftime('%H:%M')
 
 HEADERS = {
@@ -28,11 +31,11 @@ def fetch_pages():
         browser = p.chromium.launch(args=['--no-sandbox'])
         page = browser.new_page()
 
-        # Main scores page
+        # Today: main scores page
         page.goto('https://www.livegames.co.il/', wait_until='networkidle', timeout=30000)
         scores_text = strip_html(page.content())[:5000]
 
-        # שידורים (TV broadcasts) tab
+        # Today: שידורים (TV broadcasts) tab
         tv_text = ''
         try:
             page.click('a:has-text("שידורים")', timeout=5000)
@@ -41,8 +44,27 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
+        # Yesterday: try date URL then prev-day arrow
+        yesterday_text = ''
+        try:
+            page.goto(f'https://www.livegames.co.il/?date={YESTERDAY_DATE}',
+                      wait_until='networkidle', timeout=20000)
+            yesterday_text = strip_html(page.content())[:5000]
+            # Verify we actually got a different day (not just today again)
+            if YESTERDAY_DATE not in page.url and len(yesterday_text) < 200:
+                raise Exception('date URL may not have worked')
+        except Exception:
+            # Fallback: click prev-day arrow on main page
+            try:
+                page.goto('https://www.livegames.co.il/', wait_until='networkidle', timeout=20000)
+                page.click('[class*="prev"], [aria-label*="prev"], .arrow-left, a:has-text("◄"), a:has-text("<")', timeout=5000)
+                page.wait_for_load_state('networkidle', timeout=10000)
+                yesterday_text = strip_html(page.content())[:5000]
+            except Exception as e2:
+                print(f'Yesterday fetch failed: {e2}')
+
         browser.close()
-    return scores_text, tv_text
+    return scores_text, tv_text, yesterday_text
 
 
 def call_llm(prompt):
@@ -165,37 +187,37 @@ def section_html(title, games):
 # ── fetch livegames.co.il ──────────────────────────────────────────────────────
 print('Fetching livegames.co.il...')
 try:
-    scores_text, tv_text = fetch_pages()
-    print(f'Scores text: {len(scores_text)} chars, TV text: {len(tv_text)} chars')
-    print('=== TV BROADCASTS SAMPLE ===')
-    print(tv_text[:1000])
-    print('============================')
+    scores_text, tv_text, yesterday_text = fetch_pages()
+    print(f'Scores: {len(scores_text)} chars, TV: {len(tv_text)} chars, Yesterday: {len(yesterday_text)} chars')
     source_desc = 'livegames.co.il'
 except Exception as e:
     print(f'Fetch failed ({e}), using empty content')
-    scores_text, tv_text = '', ''
+    scores_text, tv_text, yesterday_text = '', '', ''
     source_desc = 'fallback'
 
-PROMPT = f"""Today is {TODAY} Israel time.
+PROMPT = f"""Today is {TODAY} Israel time. Yesterday was {YESTERDAY}.
 
-Below is content from livegames.co.il — SCORES section and TV BROADCASTS section.
-Extract ALL sports events and return ONLY raw JSON (no markdown fences):
+Below is content from livegames.co.il. Extract ALL sports events and return ONLY raw JSON (no markdown fences):
 
-{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
+{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other","day":"today|yesterday"}}]}}
 
 Rules:
 - id: unique short kebab-case string, e.g. "canada-bosnia"
 - status: live=in play, finished=full time, upcoming=not started, postponed=cancelled
 - heat 1=low drama 2=decent 3=must-watch — only for live/finished games
 - note: max 8 words, no score numbers
-- CRITICAL — tv field: Cross-reference the TV BROADCASTS section below. Any game that appears in the TV BROADCASTS section MUST have tv=true and channel set to the channel name shown (e.g. "כאן 11", "ספורט 1", etc.)
+- day: "today" for games from TODAY SCORES section, "yesterday" for games from YESTERDAY SCORES section
+- CRITICAL — tv field: Cross-reference the TV BROADCASTS section. Any game that appears there MUST have tv=true and channel set to the channel name shown (e.g. "כאן 11", "ספורט 1", etc.)
 - sport=football for soccer
 
-=== SCORES ===
+=== TODAY SCORES ===
 {scores_text}
 
-=== TV BROADCASTS ===
-{tv_text}"""
+=== TV BROADCASTS (today) ===
+{tv_text}
+
+=== YESTERDAY SCORES ===
+{yesterday_text}"""
 
 print('Calling LLM...')
 raw = call_llm(PROMPT)
@@ -206,23 +228,29 @@ print(f'Parsed {len(games)} games')
 football = [g for g in games if g.get('sport', 'football') == 'football']
 other    = [g for g in games if g.get('sport', 'football') != 'football']
 
+today_fb     = [g for g in football if g.get('day', 'today') == 'today']
+yest_fb      = [g for g in football if g.get('day', 'today') == 'yesterday']
+
 live_sec     = section_html('<span class="dot"></span> Live Now',
-                            [g for g in football if g['status'] == 'live'])
+                            [g for g in today_fb if g['status'] == 'live'])
 finished_sec = section_html('&#9989; Full Time — Recap Heat',
-                            [g for g in football if g['status'] in ('finished', 'postponed')])
+                            [g for g in today_fb if g['status'] in ('finished', 'postponed')])
 upcoming_sec = section_html('&#9200; Kicking Off Soon',
-                            [g for g in football if g['status'] == 'upcoming'])
+                            [g for g in today_fb if g['status'] == 'upcoming'])
 other_sec    = section_html('&#128250; Other Sports — On Israeli TV', other)
+yesterday_sec = section_html(f'&#128197; Yesterday ({YESTERDAY}) — Recap Heat',
+                             [g for g in yest_fb if g['status'] in ('finished', 'postponed')])
 
 TEMPLATE = open(os.path.join(os.path.dirname(__file__), 'template.html'), encoding='utf-8').read()
 
 html = (TEMPLATE
-        .replace('%%LIVE%%',     live_sec)
-        .replace('%%FINISHED%%', finished_sec)
-        .replace('%%UPCOMING%%', upcoming_sec)
-        .replace('%%OTHER%%',    other_sec)
-        .replace('%%TODAY%%',    TODAY)
-        .replace('%%SNAPSHOT%%', SNAPSHOT))
+        .replace('%%LIVE%%',      live_sec)
+        .replace('%%FINISHED%%',  finished_sec)
+        .replace('%%UPCOMING%%',  upcoming_sec)
+        .replace('%%OTHER%%',     other_sec)
+        .replace('%%YESTERDAY%%', yesterday_sec)
+        .replace('%%TODAY%%',     TODAY)
+        .replace('%%SNAPSHOT%%',  SNAPSHOT))
 
 out = os.path.join(os.path.dirname(__file__), '..', 'index.html')
 with open(out, 'w', encoding='utf-8') as f:
