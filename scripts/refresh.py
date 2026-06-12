@@ -52,14 +52,58 @@ def fetch_pages():
         try:
             page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
 
-            # changeDateGames expects DD/MM/YYYY (Israeli format)
+            # Capture which element classes hold today's game results
+            # (so we can target the same container after date change)
+            game_container_classes = page.evaluate('''() => {
+                const candidates = ['#gameResults', '#gamesDiv', '.games-container',
+                    '#tblGames', '#tblResults', '#gamesList', '.gamesList',
+                    '#divGames', '#divResults', '#mainContent', '#mainResults'];
+                for (const sel of candidates) {
+                    const el = document.querySelector(sel);
+                    if (el && el.innerText.trim().length > 100) return sel + ' (found)';
+                }
+                // fallback: find div with most text content
+                let best = null, bestLen = 0;
+                document.querySelectorAll('div[id]').forEach(d => {
+                    const t = d.innerText.trim();
+                    if (t.length > bestLen && t.length < 50000) {
+                        bestLen = t.length; best = '#' + d.id + ' (' + t.length + ')';
+                    }
+                });
+                return best || 'not found';
+            }''')
+            print(f'Game container: {game_container_classes}')
+
+            # Intercept AJAX calls triggered by changeDateGames
+            ajax_urls = []
+            page.on('request', lambda req: ajax_urls.append(req.url))
+
             yest_fmt = yesterday.strftime('%d/%m/%Y')
             page.evaluate(f'changeDateGames("{yest_fmt}")')
-            page.wait_for_load_state('networkidle', timeout=15000)
-            time.sleep(3)  # extra settle for AJAX game list update
-            yesterday_text = strip_html(page.content())[:8000]
-            print(f'Yesterday ({yest_fmt}) content: {len(yesterday_text)} chars')
-            print(f'Yesterday sample: {yesterday_text[500:800]!r}')  # skip header, show game area
+            page.wait_for_load_state('networkidle', timeout=20000)
+            time.sleep(4)
+
+            new_ajax = [u for u in ajax_urls if 'livegames' in u]
+            print(f'AJAX calls after changeDateGames: {new_ajax}')
+
+            # Try to get just the games section
+            game_text = page.evaluate('''() => {
+                const ids = ['gameResults','gamesDiv','divGames','divResults','tblGames',
+                             'tblResults','gamesList','mainContent','articlesupdates',
+                             'UpdatePanel1','divContent'];
+                for (const id of ids) {
+                    const el = document.getElementById(id);
+                    if (el && el.innerText.trim().length > 100) return el.innerText.trim();
+                }
+                return null;
+            }''')
+            if game_text and len(game_text) > 200:
+                yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
+                print(f'Got yesterday from element: {len(yesterday_text)} chars')
+            else:
+                yesterday_text = strip_html(page.content())[:8000]
+                print(f'Got yesterday from full page: {len(yesterday_text)} chars')
+            print(f'Yesterday sample (mid): {yesterday_text[300:700]!r}')
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
