@@ -161,6 +161,7 @@ def card_html(g):
     heat   = g.get('heat', 1)
     note   = g.get('note', '')
 
+    card_class = 'card finished' if status == 'finished' else 'card'
     attrs = f' data-id="{lid}"' if lid else ''
     if status == 'live':  attrs += ' data-live="true"'
 
@@ -191,11 +192,7 @@ def card_html(g):
                  f'</span>')
         body = f'<div class="meta" style="margin-bottom:3px;">HEAT SO FAR (LIVE)</div>{heatbar(heat)}<div class="note">{note}</div>'
     elif status == 'finished':
-        right = (f'<span class="live-meta-wrap">'
-                 f'<button class="reveal-btn">&#128065; Score</button>'
-                 f'<span class="score">{score}</span>'
-                 f'<span class="started-ago"></span>'
-                 f'</span>')
+        right = f'<span class="score-final">{score}</span>'
         body = f'{heatbar(heat)}<div class="note">{note}</div>{recap_link(away, home)}'
     elif status == 'postponed':
         right = ''
@@ -205,7 +202,7 @@ def card_html(g):
         right = f'<span class="meta">{kickoff}</span>'
         body  = ''
 
-    return (f'<div class="card"{attrs}>\n'
+    return (f'<div class="{card_class}"{attrs}>\n'
             f'  <div class="card-top"><span class="league">{league}</span>{right}</div>\n'
             f'  <div class="teams">{away} vs {home}</div>\n'
             f'  {body}\n'
