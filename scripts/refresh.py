@@ -213,8 +213,21 @@ def section_html(title, games):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 print('Fetching World Cup schedule from ESPN...')
+
+# Debug: check raw status of first few events
+try:
+    r = requests.get(f'{ESPN_BASE}/scoreboard?dates=20260612', timeout=15)
+    evs = r.json().get('events', [])
+    for ev in evs[:3]:
+        comp = ev['competitions'][0]
+        st = comp.get('status', {})
+        ev_st = ev.get('status', {})
+        print(f'Event: {ev.get("name")} | comp.status={st} | ev.status={ev_st}')
+except Exception as e:
+    print(f'Debug fetch failed: {e}')
+
 games = fetch_world_cup()
-print(f'Fetched {len(games)} games')
+print(f'Fetched {len(games)} games, statuses: {set(g["status"] for g in games)}')
 
 # Apply heat ratings to finished games
 finished = [g for g in games if g['status'] == 'finished']
