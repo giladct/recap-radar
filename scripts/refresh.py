@@ -52,25 +52,19 @@ def fetch_pages():
         try:
             page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
 
-            # Dump all <a> hrefs and short-text elements to understand nav structure
-            links = page.eval_on_selector_all('a', 'els => els.map(e => ({href: e.href, text: e.innerText.trim().slice(0,30), cls: e.className}))')
-            print('=== ALL LINKS ===')
-            for l in links[:40]:
-                print(l)
-            print('=== END LINKS ===')
-
-            # Also dump outer HTML of elements with "arrow" or "date" in class
-            date_els = page.query_selector_all('[class*="arrow"], [class*="date"], [class*="prev"], [class*="next"], [class*="nav"]')
-            print('=== DATE/ARROW ELEMENTS ===')
-            for el in date_els[:20]:
-                try:
-                    print(el.get_attribute('class'), '|', el.inner_text().strip()[:40], '|', el.get_attribute('onclick'))
-                except Exception:
-                    pass
-            print('=== END DATE/ARROW ELEMENTS ===')
+            # Dump raw HTML around date/nav areas to find the structure
+            raw_html = page.content()
+            # Look for onclick, doPostBack, or date patterns
+            import re as _re
+            snippets = _re.findall(r'.{0,60}(?:onclick|doPostBack|prevDay|nextDay|yesterday|date|arrow|nav).{0,60}',
+                                   raw_html, _re.IGNORECASE)
+            print('=== HTML SNIPPETS WITH onclick/date/nav ===')
+            for s in snippets[:30]:
+                print(s.replace('\n', ' '))
+            print('=== END SNIPPETS ===')
 
         except Exception as e:
-            print(f'Yesterday fetch failed: {e}')
+            print(f'Yesterday debug failed: {e}')
 
         browser.close()
     return scores_text, tv_text, yesterday_text
