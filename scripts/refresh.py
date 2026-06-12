@@ -47,55 +47,28 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: click the prev-day arrow on the page
+        # Yesterday: find date nav structure then navigate back one day
         yesterday_text = ''
         try:
-            # Go back to scores tab first
             page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
-            # Print all clickable elements to help debug navigation
-            arrows = page.query_selector_all('a, button, span, div')
-            arrow_texts = []
-            for el in arrows[:80]:
+
+            # Dump all <a> hrefs and short-text elements to understand nav structure
+            links = page.eval_on_selector_all('a', 'els => els.map(e => ({href: e.href, text: e.innerText.trim().slice(0,30), cls: e.className}))')
+            print('=== ALL LINKS ===')
+            for l in links[:40]:
+                print(l)
+            print('=== END LINKS ===')
+
+            # Also dump outer HTML of elements with "arrow" or "date" in class
+            date_els = page.query_selector_all('[class*="arrow"], [class*="date"], [class*="prev"], [class*="next"], [class*="nav"]')
+            print('=== DATE/ARROW ELEMENTS ===')
+            for el in date_els[:20]:
                 try:
-                    t = el.inner_text().strip()
-                    if t and len(t) < 10:
-                        arrow_texts.append(repr(t))
+                    print(el.get_attribute('class'), '|', el.inner_text().strip()[:40], '|', el.get_attribute('onclick'))
                 except Exception:
                     pass
-            print(f'Short clickable texts: {arrow_texts[:30]}')
+            print('=== END DATE/ARROW ELEMENTS ===')
 
-            # Try common prev-day selectors for Israeli sports sites
-            clicked = False
-            for sel in [
-                'a[href*="yesterday"]',
-                'a[href*="prev"]',
-                '[class*="prev-day"]',
-                '[class*="prevDay"]',
-                '[class*="yesterday"]',
-                'button:has-text("‹")',
-                'a:has-text("‹")',
-                'span:has-text("‹")',
-                '.arrow:first-of-type',
-                '[class*="arrow-left"]',
-                '[class*="arrowLeft"]',
-                '[class*="date-nav"] a:first-child',
-                '[class*="dateNav"] a:first-child',
-                'td:has-text("‹")',
-                'td:has-text("<")',
-                'a:has-text("<")',
-            ]:
-                try:
-                    page.click(sel, timeout=2000)
-                    page.wait_for_load_state('networkidle', timeout=10000)
-                    yesterday_text = strip_html(page.content())[:5000]
-                    print(f'Clicked prev-day via: {sel} → URL: {page.url}')
-                    clicked = True
-                    break
-                except Exception:
-                    continue
-
-            if not clicked:
-                print('Could not find prev-day button; yesterday section will be empty')
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
