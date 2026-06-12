@@ -25,6 +25,8 @@ def strip_html(html):
     return re.sub(r'\s+', ' ', text).strip()
 
 
+BASE_URL = 'https://www.livegames.co.il/livegames.aspx'
+
 def fetch_pages():
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
@@ -32,8 +34,9 @@ def fetch_pages():
         page = browser.new_page()
 
         # Today: main scores page
-        page.goto('https://www.livegames.co.il/', wait_until='networkidle', timeout=30000)
+        page.goto(BASE_URL, wait_until='networkidle', timeout=30000)
         scores_text = strip_html(page.content())[:5000]
+        print(f'Today URL: {page.url}')
 
         # Today: שידורים (TV broadcasts) tab
         tv_text = ''
@@ -44,24 +47,57 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: try date URL then prev-day arrow
+        # Yesterday: click the prev-day arrow on the page
         yesterday_text = ''
         try:
-            page.goto(f'https://www.livegames.co.il/?date={YESTERDAY_DATE}',
-                      wait_until='networkidle', timeout=20000)
-            yesterday_text = strip_html(page.content())[:5000]
-            # Verify we actually got a different day (not just today again)
-            if YESTERDAY_DATE not in page.url and len(yesterday_text) < 200:
-                raise Exception('date URL may not have worked')
-        except Exception:
-            # Fallback: click prev-day arrow on main page
-            try:
-                page.goto('https://www.livegames.co.il/', wait_until='networkidle', timeout=20000)
-                page.click('[class*="prev"], [aria-label*="prev"], .arrow-left, a:has-text("◄"), a:has-text("<")', timeout=5000)
-                page.wait_for_load_state('networkidle', timeout=10000)
-                yesterday_text = strip_html(page.content())[:5000]
-            except Exception as e2:
-                print(f'Yesterday fetch failed: {e2}')
+            # Go back to scores tab first
+            page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
+            # Print all clickable elements to help debug navigation
+            arrows = page.query_selector_all('a, button, span, div')
+            arrow_texts = []
+            for el in arrows[:80]:
+                try:
+                    t = el.inner_text().strip()
+                    if t and len(t) < 10:
+                        arrow_texts.append(repr(t))
+                except Exception:
+                    pass
+            print(f'Short clickable texts: {arrow_texts[:30]}')
+
+            # Try common prev-day selectors for Israeli sports sites
+            clicked = False
+            for sel in [
+                'a[href*="yesterday"]',
+                'a[href*="prev"]',
+                '[class*="prev-day"]',
+                '[class*="prevDay"]',
+                '[class*="yesterday"]',
+                'button:has-text("‹")',
+                'a:has-text("‹")',
+                'span:has-text("‹")',
+                '.arrow:first-of-type',
+                '[class*="arrow-left"]',
+                '[class*="arrowLeft"]',
+                '[class*="date-nav"] a:first-child',
+                '[class*="dateNav"] a:first-child',
+                'td:has-text("‹")',
+                'td:has-text("<")',
+                'a:has-text("<")',
+            ]:
+                try:
+                    page.click(sel, timeout=2000)
+                    page.wait_for_load_state('networkidle', timeout=10000)
+                    yesterday_text = strip_html(page.content())[:5000]
+                    print(f'Clicked prev-day via: {sel} → URL: {page.url}')
+                    clicked = True
+                    break
+                except Exception:
+                    continue
+
+            if not clicked:
+                print('Could not find prev-day button; yesterday section will be empty')
+        except Exception as e:
+            print(f'Yesterday fetch failed: {e}')
 
         browser.close()
     return scores_text, tv_text, yesterday_text
