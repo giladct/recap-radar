@@ -6,143 +6,173 @@ from urllib.parse import quote
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 IL = timezone(timedelta(hours=3))
 now = datetime.now(IL)
-yesterday = now - timedelta(days=1)
 TODAY = now.strftime('%B %d, %Y')
-YESTERDAY = yesterday.strftime('%B %d, %Y')
-
 SNAPSHOT = now.strftime('%H:%M')
 
-
-def strip_html(html):
-    text = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
-    text = re.sub(r'<style[^>]*>.*?</style>',  '', text,  flags=re.DOTALL)
-    text = re.sub(r'<[^>]+>', ' ', text)
-    return re.sub(r'\s+', ' ', text).strip()
+WC_START = datetime(2026, 6, 11, tzinfo=timezone.utc)
+WC_END   = datetime(2026, 7, 19, tzinfo=timezone.utc)
+ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world'
 
 
-BASE_URL = 'https://www.livegames.co.il/livegames.aspx'
+# ── ESPN data ─────────────────────────────────────────────────────────────────
 
-def fetch_pages():
-    from playwright.sync_api import sync_playwright
-    with sync_playwright() as p:
-        browser = p.chromium.launch(args=['--no-sandbox'])
-        page = browser.new_page()
-
-        # Today: main scores page — extract #GameResultView directly
-        page.goto(BASE_URL, wait_until='networkidle', timeout=30000)
-        game_view = page.evaluate("() => { const el = document.getElementById('GameResultView'); return el ? el.innerText.trim() : null; }")
-        scores_text = (re.sub(r'\s+', ' ', game_view)[:8000] if game_view and len(game_view) > 100
-                       else strip_html(page.content())[:5000])
-
-        # Today: שידורים (TV broadcasts) tab
-        tv_text = ''
+def fetch_world_cup():
+    events = []
+    current = WC_START
+    while current <= WC_END:
+        date_str = current.strftime('%Y%m%d')
         try:
-            page.click('a:has-text("שידורים")', timeout=5000)
-            page.wait_for_load_state('networkidle', timeout=10000)
-            tv_text = strip_html(page.content())[:4000]
+            r = requests.get(f'{ESPN_BASE}/scoreboard?dates={date_str}', timeout=15)
+            if r.ok:
+                for ev in r.json().get('events', []):
+                    parsed = parse_event(ev)
+                    if parsed:
+                        events.append(parsed)
         except Exception as e:
-            print(f'TV tab not found: {e}')
+            print(f'ESPN fetch {date_str} failed: {e}')
+        current += timedelta(days=1)
+    return events
 
-        # Yesterday: click the .CalLeft (previous day) button — discovered via jQuery event inspection
-        yesterday_text = ''
-        try:
-            page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
-            before_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0, 80) : ''; }")
-            page.click('.CalLeft', timeout=5000)
-            page.wait_for_function(
-                f"() => {{ const el = document.querySelector('.ShowResultTablediv'); return el && el.innerText.trim().slice(0,80) !== {repr(before_text)}; }}",
-                timeout=20000
-            )
-            game_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim() : null; }")
-            if game_text and len(game_text) > 500:
-                yesterday_text = re.sub(r'\s+', ' ', game_text)[:12000]
-                print(f'Yesterday: {len(game_text)} chars raw → {len(yesterday_text)} chars')
-        except Exception as e:
-            print(f'Yesterday fetch failed: {e}')
 
-        browser.close()
-    return scores_text, tv_text, yesterday_text
+def parse_event(ev):
+    comp = ev['competitions'][0]
+    home_c = next((c for c in comp['competitors'] if c['homeAway'] == 'home'), {})
+    away_c = next((c for c in comp['competitors'] if c['homeAway'] == 'away'), {})
+    home_team = home_c.get('team', {})
+    away_team = away_c.get('team', {})
 
+    st = comp.get('status', {}).get('type', {})
+    st_name = st.get('name', 'STATUS_SCHEDULED')
+    if st_name == 'STATUS_FINAL':
+        status = 'finished'
+    elif st_name in ('STATUS_IN_PROGRESS', 'STATUS_HALFTIME', 'STATUS_END_PERIOD'):
+        status = 'live'
+    elif st_name == 'STATUS_POSTPONED':
+        status = 'postponed'
+    else:
+        status = 'upcoming'
+
+    h_score = home_c.get('score', '')
+    a_score = away_c.get('score', '')
+    score = f'{a_score}-{h_score}' if h_score != '' and a_score != '' else None
+
+    # Group/round label from notes
+    group = ''
+    for note in comp.get('notes', []):
+        hl = note.get('headline', '')
+        if hl:
+            group = hl
+            break
+    if not group:
+        group = ev.get('season', {}).get('displayName', 'FIFA World Cup 2026')
+
+    period = st.get('shortDetail', '')
+
+    return {
+        'id': str(ev.get('id', '')),
+        'league': group,
+        'home': home_team.get('displayName', ''),
+        'away': away_team.get('displayName', ''),
+        'home_flag': home_team.get('flag', {}).get('href', ''),
+        'away_flag': away_team.get('flag', {}).get('href', ''),
+        'status': status,
+        'score': score,
+        'period': period,
+        'date': ev.get('date', ''),
+        'heat': 1,
+        'note': '',
+        'tv': False,
+        'channel': '',
+    }
+
+
+# ── LLM heat ratings ──────────────────────────────────────────────────────────
 
 def call_llm(prompt):
-    # GitHub Models — uses the GITHUB_TOKEN already present in every Actions run
     for model in ['gpt-4o-mini', 'gpt-4o', 'Llama-3.1-70B-Instruct']:
         for attempt in range(3):
             try:
                 r = requests.post(
                     'https://models.inference.ai.azure.com/chat/completions',
-                    headers={
-                        'Authorization': f'Bearer {GITHUB_TOKEN}',
-                        'Content-Type': 'application/json',
-                    },
-                    json={
-                        'model': model,
-                        'messages': [{'role': 'user', 'content': prompt}],
-                        'max_tokens': 10000,
-                        'temperature': 0.1,
-                    },
+                    headers={'Authorization': f'Bearer {GITHUB_TOKEN}', 'Content-Type': 'application/json'},
+                    json={'model': model, 'messages': [{'role': 'user', 'content': prompt}],
+                          'max_tokens': 4000, 'temperature': 0.1},
                     timeout=90
                 )
                 if r.status_code == 429:
-                    wait = 15 * (attempt + 1)
-                    print(f'{model} rate-limited, waiting {wait}s...')
-                    time.sleep(wait)
-                    continue
+                    time.sleep(15 * (attempt + 1)); continue
                 if not r.ok:
-                    print(f'{model} HTTP {r.status_code}: {r.text[:300]}')
-                    break
-                print(f'OK: {model}')
+                    print(f'{model} HTTP {r.status_code}: {r.text[:200]}'); break
+                print(f'LLM OK: {model}')
                 return r.json()['choices'][0]['message']['content']
             except Exception as e:
-                print(f'{model} attempt {attempt+1} error: {e}')
-                time.sleep(5)
+                print(f'{model} error: {e}'); time.sleep(5)
     raise RuntimeError('All models failed')
 
 
-def extract_json(text):
-    text = re.sub(r'```json|```', '', text).strip()
-    start, end = text.find('{'), text.rfind('}')
-    if start == -1 or end <= start:
-        raise ValueError('No JSON in response')
-    return json.loads(text[start:end + 1])
+def rate_finished(games):
+    if not games:
+        return {}
+    lines = '\n'.join(f'{g["id"]}|{g["away"]} {g["score"] or "?"} {g["home"]}|{g["league"]}' for g in games)
+    prompt = f"""FIFA World Cup 2026. Rate each finished match for recap watchability.
 
+Return ONLY raw JSON (no markdown): {{"ratings":[{{"id":"...","heat":2,"note":"under 8 words"}}]}}
+
+heat: 1=one-sided/boring 2=decent match 3=must-watch drama
+note: max 8 words, no score numbers (e.g. "Stunning comeback in stoppage time")
+
+Matches (id|score|group):
+{lines}"""
+    try:
+        raw = call_llm(prompt)
+        raw = re.sub(r'```json|```', '', raw).strip()
+        s, e = raw.find('{'), raw.rfind('}')
+        data = json.loads(raw[s:e+1])
+        return {r['id']: r for r in data.get('ratings', [])}
+    except Exception as ex:
+        print(f'Rating failed: {ex}')
+        return {}
+
+
+# ── HTML rendering ────────────────────────────────────────────────────────────
 
 def heatbar(heat):
     h = max(1, min(3, int(heat or 1)))
     cls = 'on-high' if h >= 3 else ('on-mid' if h == 2 else 'on-low')
-    segs = ''.join(
+    return '<div class="heatbar">' + ''.join(
         f'<div class="seg {cls}"></div>' if i < h else '<div class="seg"></div>'
         for i in range(3)
-    )
-    return f'<div class="heatbar">{segs}</div>'
+    ) + '</div>'
 
 
-def recap_link(home_he, away_he):
-    q = quote(f'{away_he} {home_he} תקציר')
+def recap_link(away, home):
+    q = quote(f'{away} {home} recap highlights')
     return f'<a class="recap-link" href="https://www.youtube.com/results?search_query={q}" target="_blank" rel="noopener">&#9654; Watch recap</a>'
 
 
 def card_html(g):
-    lid     = g.get('id', '')
-    league  = g.get('league', '')
-    home    = g.get('home_he', '')
-    away    = g.get('away_he', '')
-    status  = g.get('status', 'upcoming')
-    score   = g.get('score') or '?-?'
-    period  = g.get('period', '')
-    heat    = g.get('heat', 1)
-    note    = g.get('note', '')
-    tv      = g.get('tv', False)
-    channel = g.get('channel', '') or ''
-    started = g.get('started_at', '') or ''
+    lid    = g.get('id', '')
+    league = g.get('league', '')
+    home   = g.get('home', '')
+    away   = g.get('away', '')
+    status = g.get('status', 'upcoming')
+    score  = g.get('score') or '?-?'
+    period = g.get('period', '')
+    heat   = g.get('heat', 1)
+    note   = g.get('note', '')
 
-    attrs = ''
-    if lid:              attrs += f' data-id="{lid}"'
-    if status == 'live': attrs += ' data-live="true"'
-    if tv:               attrs += ' data-tv="true"'
-    if started:          attrs += f' data-started-at="{started}"'
+    attrs = f' data-id="{lid}"' if lid else ''
+    if status == 'live':  attrs += ' data-live="true"'
 
-    ch = f'<span class="channel">&#128250; {channel}</span>' if tv and channel else ''
+    # Format kickoff time in Israel timezone
+    time_str = ''
+    if g.get('date'):
+        try:
+            dt = datetime.fromisoformat(g['date'].replace('Z', '+00:00')).astimezone(IL)
+            time_str = dt.strftime('%H:%M')
+            attrs += f' data-started-at="{dt.isoformat()}"'
+        except Exception:
+            pass
 
     if status == 'live':
         right = (f'<span class="live-meta-wrap">'
@@ -150,26 +180,25 @@ def card_html(g):
                  f'<span class="score">{score}</span>'
                  f'<span class="meta live"><span class="dot"></span> {period or "Live"}</span>'
                  f'<span class="started-ago"></span>'
-                 f'</span>{ch}')
-        body = (f'<div class="meta" style="margin-bottom:3px;">HEAT SO FAR (LIVE)</div>'
-                f'{heatbar(heat)}<div class="note">{note}</div>')
+                 f'</span>')
+        body = f'<div class="meta" style="margin-bottom:3px;">HEAT SO FAR (LIVE)</div>{heatbar(heat)}<div class="note">{note}</div>'
     elif status == 'finished':
         right = (f'<span class="live-meta-wrap">'
                  f'<button class="reveal-btn">&#128065; Score</button>'
                  f'<span class="score">{score}</span>'
                  f'<span class="started-ago"></span>'
-                 f'</span>{ch}')
-        body = f'{heatbar(heat)}<div class="note">{note}</div>{recap_link(home, away)}'
+                 f'</span>')
+        body = f'{heatbar(heat)}<div class="note">{note}</div>{recap_link(away, home)}'
     elif status == 'postponed':
-        right = ch
-        body  = '<div class="note postponed">Postponed — not played today.</div>'
+        right = ''
+        body  = '<div class="note postponed">Postponed.</div>'
     else:
-        right = f'<span class="live-meta-wrap"><span class="meta">{period or "TBD"}</span>{ch}</span>'
-        body  = '<div class="note">Not started yet — heat rating will appear after full time.</div>'
+        right = f'<span class="meta">{time_str or "TBD"}</span>'
+        body  = '<div class="note upcoming-note">Score hidden until revealed.</div>'
 
     return (f'<div class="card"{attrs}>\n'
             f'  <div class="card-top"><span class="league">{league}</span>{right}</div>\n'
-            f'  <div class="teams">{away} - {home}</div>\n'
+            f'  <div class="teams">{away} vs {home}</div>\n'
             f'  {body}\n'
             f'</div>')
 
@@ -181,100 +210,43 @@ def section_html(title, games):
     return f'<div class="section">\n  <div class="section-title">{title}</div>\n{cards}\n</div>\n'
 
 
-# ── fetch livegames.co.il ──────────────────────────────────────────────────────
-print('Fetching livegames.co.il...')
-try:
-    scores_text, tv_text, yesterday_text = fetch_pages()
-    print(f'Scores: {len(scores_text)} chars, TV: {len(tv_text)} chars, Yesterday: {len(yesterday_text)} chars')
-    source_desc = 'livegames.co.il'
-except Exception as e:
-    print(f'Fetch failed ({e}), using empty content')
-    scores_text, tv_text, yesterday_text = '', '', ''
-    source_desc = 'fallback'
+# ── main ──────────────────────────────────────────────────────────────────────
 
-TODAY_PROMPT = f"""Today is {TODAY} Israel time.
+print('Fetching World Cup schedule from ESPN...')
+games = fetch_world_cup()
+print(f'Fetched {len(games)} games')
 
-Below is content from livegames.co.il. Extract ALL sports events and return ONLY raw JSON (no markdown fences):
-
-{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
-
-Rules:
-- id: unique short kebab-case string
-- status: live=in play, finished=full time, upcoming=not started, postponed=cancelled
-- heat 1=low drama 2=decent 3=must-watch — only for live/finished
-- note: max 8 words, no score numbers
-- CRITICAL — tv field: Cross-reference TV BROADCASTS. Any game there MUST have tv=true and channel set to the channel name (e.g. "כאן 11", "ספורט 1")
-- sport=football for soccer
-
-=== SCORES ===
-{scores_text}
-
-=== TV BROADCASTS ===
-{tv_text}"""
-
-YEST_PROMPT = f"""Yesterday was {YESTERDAY} Israel time.
-
-Below is yesterday's sports content from livegames.co.il. Extract ALL finished/postponed events and return ONLY raw JSON:
-
-{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"finished|postponed","score":"X-Y or null","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"sport":"football|basketball|baseball|tennis|other"}}]}}
-
-Rules:
-- id: unique short kebab-case string
-- status: only finished or postponed (yesterday's games are over)
-- heat 1=low drama 2=decent 3=must-watch
-- note: max 8 words, no score numbers
-- sport=football for soccer
-
-=== YESTERDAY SCORES ===
-{yesterday_text}"""
-
-print('Calling LLM for today...')
-raw_today = call_llm(TODAY_PROMPT)
-today_games = extract_json(raw_today).get('games', [])
-for g in today_games:
-    g['day'] = 'today'
-print(f'Today: {len(today_games)} games')
-
-yest_games = []
-if yesterday_text:
-    print('Calling LLM for yesterday...')
-    raw_yest = call_llm(YEST_PROMPT)
-    yest_games = extract_json(raw_yest).get('games', [])
-    for g in yest_games:
-        g['day'] = 'yesterday'
-    print(f'Yesterday: {len(yest_games)} games')
-
-games = today_games + yest_games
-print(f'Total: {len(games)} games')
-
-football = [g for g in games if g.get('sport', 'football') == 'football']
-other    = [g for g in games if g.get('sport', 'football') != 'football']
-
-today_fb     = [g for g in football if g.get('day', 'today') == 'today']
-yest_fb      = [g for g in football if g.get('day', 'today') == 'yesterday']
+# Apply heat ratings to finished games
+finished = [g for g in games if g['status'] == 'finished']
+if finished:
+    print(f'Rating {len(finished)} finished games...')
+    ratings = rate_finished(finished)
+    for g in finished:
+        r = ratings.get(g['id'], {})
+        g['heat']  = r.get('heat', 1)
+        g['note']  = r.get('note', '')
 
 live_sec     = section_html('<span class="dot"></span> Live Now',
-                            [g for g in today_fb if g['status'] == 'live'])
+                            [g for g in games if g['status'] == 'live'])
 finished_sec = section_html('&#9989; Full Time — Recap Heat',
-                            [g for g in today_fb if g['status'] in ('finished', 'postponed')])
-upcoming_sec = section_html('&#9200; Kicking Off Soon',
-                            [g for g in today_fb if g['status'] == 'upcoming'])
-other_sec    = section_html('&#128250; Other Sports — On Israeli TV', other)
-yesterday_sec = section_html(f'&#128197; Yesterday ({YESTERDAY}) — Recap Heat',
-                             [g for g in yest_fb if g['status'] in ('finished', 'postponed')])
+                            [g for g in games if g['status'] in ('finished', 'postponed')])
+upcoming_sec = section_html('&#9200; Upcoming Matches',
+                            [g for g in games if g['status'] == 'upcoming'])
 
 TEMPLATE = open(os.path.join(os.path.dirname(__file__), 'template.html'), encoding='utf-8').read()
 
 html = (TEMPLATE
-        .replace('%%LIVE%%',      live_sec)
-        .replace('%%FINISHED%%',  finished_sec)
-        .replace('%%UPCOMING%%',  upcoming_sec)
-        .replace('%%OTHER%%',     other_sec)
-        .replace('%%YESTERDAY%%', yesterday_sec)
-        .replace('%%TODAY%%',     TODAY)
-        .replace('%%SNAPSHOT%%',  SNAPSHOT))
+        .replace('%%LIVE%%',     live_sec)
+        .replace('%%FINISHED%%', finished_sec)
+        .replace('%%UPCOMING%%', upcoming_sec)
+        .replace('%%TODAY%%',    TODAY)
+        .replace('%%SNAPSHOT%%', SNAPSHOT))
+
+# Remove placeholders that no longer apply
+for ph in ['%%OTHER%%', '%%YESTERDAY%%']:
+    html = html.replace(ph, '')
 
 out = os.path.join(os.path.dirname(__file__), '..', 'index.html')
 with open(out, 'w', encoding='utf-8') as f:
     f.write(html)
-print(f'Wrote index.html ({len(games)} games, source: {source_desc})')
+print(f'Wrote index.html ({len(games)} games)')
