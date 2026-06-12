@@ -47,51 +47,39 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: try multiple date URL patterns and compare content length/snippet
+        # Yesterday: call the site's own prev() JS function to navigate to yesterday
         yesterday_text = ''
-        yest_dd_mm_yyyy = yesterday.strftime('%d/%m/%Y')     # 11/06/2026
-        yest_ddmmyyyy   = yesterday.strftime('%d%m%Y')       # 11062026
-        yest_iso        = yesterday.strftime('%Y-%m-%d')     # 2026-06-11
-        yest_il_slash   = yesterday.strftime('%d-%m-%Y')     # 11-06-2026
+        try:
+            page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
+            today_snippet = strip_html(page.content())[:200]
 
-        today_snippet = scores_text[:100]
-        print(f'Today snippet: {today_snippet!r}')
+            # Call prev() — the site's built-in previous-day navigation function
+            page.evaluate('prev()')
+            page.wait_for_load_state('networkidle', timeout=15000)
+            time.sleep(2)  # extra settle time for AJAX update
+            yesterday_text = strip_html(page.content())[:5000]
+            yest_snippet = yesterday_text[:200]
 
-        for label, url in [
-            ('DD/MM/YYYY',  f'{BASE_URL}?date={yest_dd_mm_yyyy}'),
-            ('DDMMYYYY',    f'{BASE_URL}?DT={yest_ddmmyyyy}'),
-            ('ISO',         f'{BASE_URL}?date={yest_iso}'),
-            ('dash',        f'{BASE_URL}?date={yest_il_slash}'),
-            ('d param',     f'{BASE_URL}?d={yest_iso}'),
-        ]:
-            try:
-                page.goto(url, wait_until='networkidle', timeout=20000)
-                text = strip_html(page.content())[:5000]
-                snippet = text[:100]
-                different = snippet != today_snippet
-                print(f'{label} | different={different} | URL={page.url} | snippet={snippet!r}')
-                if different and len(text) > 500:
-                    yesterday_text = text
-                    print(f'  → Using this as yesterday content')
-                    break
-            except Exception as e:
-                print(f'{label} failed: {e}')
-
-        if not yesterday_text:
-            print('All date URL patterns failed; trying JS evaluation for date nav...')
-            try:
-                page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
-                # Look for any globally accessible date-change functions
-                js_fns = page.evaluate('''() => {
-                    const fns = [];
-                    for (const k of Object.keys(window)) {
-                        if (/date|day|prev|next|yesterday/i.test(k)) fns.push(k);
-                    }
-                    return fns;
-                }''')
-                print(f'Date-related JS globals: {js_fns}')
-            except Exception as e:
-                print(f'JS eval failed: {e}')
+            if yest_snippet == today_snippet:
+                print('prev() call did not change content, trying changeDateGames...')
+                # Try changeDateGames with yesterday's date string
+                for fmt in [yesterday.strftime('%d/%m/%Y'), yesterday.strftime('%Y-%m-%d'),
+                            yesterday.strftime('%d-%m-%Y')]:
+                    try:
+                        page.evaluate(f'changeDateGames("{fmt}")')
+                        page.wait_for_load_state('networkidle', timeout=15000)
+                        time.sleep(2)
+                        t = strip_html(page.content())[:5000]
+                        if t[:200] != today_snippet:
+                            yesterday_text = t
+                            print(f'changeDateGames("{fmt}") worked')
+                            break
+                    except Exception as e:
+                        print(f'changeDateGames("{fmt}") failed: {e}')
+            else:
+                print(f'prev() worked — content changed')
+        except Exception as e:
+            print(f'Yesterday fetch failed: {e}')
 
         browser.close()
     return scores_text, tv_text, yesterday_text
