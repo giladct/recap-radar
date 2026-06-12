@@ -47,37 +47,19 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: call the site's own prev() JS function to navigate to yesterday
+        # Yesterday: use changeDateGames() JS function — found via window inspection
         yesterday_text = ''
         try:
             page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
-            today_snippet = strip_html(page.content())[:200]
 
-            # Call prev() — the site's built-in previous-day navigation function
-            page.evaluate('prev()')
+            # changeDateGames expects DD/MM/YYYY (Israeli format)
+            yest_fmt = yesterday.strftime('%d/%m/%Y')
+            page.evaluate(f'changeDateGames("{yest_fmt}")')
             page.wait_for_load_state('networkidle', timeout=15000)
-            time.sleep(2)  # extra settle time for AJAX update
-            yesterday_text = strip_html(page.content())[:5000]
-            yest_snippet = yesterday_text[:200]
-
-            if yest_snippet == today_snippet:
-                print('prev() call did not change content, trying changeDateGames...')
-                # Try changeDateGames with yesterday's date string
-                for fmt in [yesterday.strftime('%d/%m/%Y'), yesterday.strftime('%Y-%m-%d'),
-                            yesterday.strftime('%d-%m-%Y')]:
-                    try:
-                        page.evaluate(f'changeDateGames("{fmt}")')
-                        page.wait_for_load_state('networkidle', timeout=15000)
-                        time.sleep(2)
-                        t = strip_html(page.content())[:5000]
-                        if t[:200] != today_snippet:
-                            yesterday_text = t
-                            print(f'changeDateGames("{fmt}") worked')
-                            break
-                    except Exception as e:
-                        print(f'changeDateGames("{fmt}") failed: {e}')
-            else:
-                print(f'prev() worked — content changed')
+            time.sleep(3)  # extra settle for AJAX game list update
+            yesterday_text = strip_html(page.content())[:8000]
+            print(f'Yesterday ({yest_fmt}) content: {len(yesterday_text)} chars')
+            print(f'Yesterday sample: {yesterday_text[500:800]!r}')  # skip header, show game area
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
