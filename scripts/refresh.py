@@ -213,35 +213,61 @@ except Exception as e:
     scores_text, tv_text, yesterday_text = '', '', ''
     source_desc = 'fallback'
 
-PROMPT = f"""Today is {TODAY} Israel time. Yesterday was {YESTERDAY}.
+TODAY_PROMPT = f"""Today is {TODAY} Israel time.
 
 Below is content from livegames.co.il. Extract ALL sports events and return ONLY raw JSON (no markdown fences):
 
-{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other","day":"today|yesterday"}}]}}
+{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"upcoming|live|finished|postponed","score":"X-Y or null","period":"HT|FT|Q2|20:45","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"started_at":"ISO8601+03:00 or null","sport":"football|basketball|baseball|tennis|other"}}]}}
 
 Rules:
-- id: unique short kebab-case string, e.g. "canada-bosnia"
+- id: unique short kebab-case string
 - status: live=in play, finished=full time, upcoming=not started, postponed=cancelled
-- heat 1=low drama 2=decent 3=must-watch — only for live/finished games
+- heat 1=low drama 2=decent 3=must-watch — only for live/finished
 - note: max 8 words, no score numbers
-- day: "today" for games from TODAY SCORES section, "yesterday" for games from YESTERDAY SCORES section
-- CRITICAL — tv field: Cross-reference the TV BROADCASTS section. Any game that appears there MUST have tv=true and channel set to the channel name shown (e.g. "כאן 11", "ספורט 1", etc.)
+- CRITICAL — tv field: Cross-reference TV BROADCASTS. Any game there MUST have tv=true and channel set to the channel name (e.g. "כאן 11", "ספורט 1")
 - sport=football for soccer
 
-=== TODAY SCORES ===
+=== SCORES ===
 {scores_text}
 
-=== TV BROADCASTS (today) ===
-{tv_text}
+=== TV BROADCASTS ===
+{tv_text}"""
+
+YEST_PROMPT = f"""Yesterday was {YESTERDAY} Israel time.
+
+Below is yesterday's sports content from livegames.co.il. Extract ALL finished/postponed events and return ONLY raw JSON:
+
+{{"games":[{{"id":"away-home-kebab","league":"League name","home_he":"קבוצת בית","away_he":"קבוצת חוץ","status":"finished|postponed","score":"X-Y or null","heat":2,"note":"under 8 words no score numbers","tv":false,"channel":null,"sport":"football|basketball|baseball|tennis|other"}}]}}
+
+Rules:
+- id: unique short kebab-case string
+- status: only finished or postponed (yesterday's games are over)
+- heat 1=low drama 2=decent 3=must-watch
+- note: max 8 words, no score numbers
+- sport=football for soccer
 
 === YESTERDAY SCORES ===
 {yesterday_text}"""
 
-print('Calling LLM...')
-raw = call_llm(PROMPT)
-data = extract_json(raw)
-games = data.get('games', [])
-print(f'Parsed {len(games)} games')
+print('Calling LLM for today...')
+raw_today = call_llm(TODAY_PROMPT)
+today_games = extract_json(raw_today).get('games', [])
+for g in today_games:
+    g['day'] = 'today'
+print(f'Today: {len(today_games)} games')
+
+yest_games = []
+if yesterday_text:
+    print('Yesterday text sample:', yesterday_text[:300])
+    print('Calling LLM for yesterday...')
+    raw_yest = call_llm(YEST_PROMPT)
+    yest_games = extract_json(raw_yest).get('games', [])
+    for g in yest_games:
+        g['day'] = 'yesterday'
+    print(f'Yesterday: {len(yest_games)} games')
+
+games = today_games + yest_games
+print(f'Total: {len(games)} games')
 
 football = [g for g in games if g.get('sport', 'football') == 'football']
 other    = [g for g in games if g.get('sport', 'football') != 'football']
