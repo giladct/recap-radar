@@ -22,7 +22,7 @@ def fetch_page(url):
 
 
 def call_gemini(prompt):
-    for model in ['gemini-1.5-flash', 'gemini-2.0-flash']:
+    for model in ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-exp']:
         for attempt in range(3):
             try:
                 r = requests.post(
@@ -34,11 +34,14 @@ def call_gemini(prompt):
                     timeout=90
                 )
                 if r.status_code == 429:
-                    wait = 20 * (attempt + 1)
-                    print(f'{model} rate-limited, waiting {wait}s...')
+                    wait = 15 * (attempt + 1)
+                    print(f'{model} rate-limited (429), body: {r.text[:300]}')
+                    print(f'  waiting {wait}s...')
                     time.sleep(wait)
                     continue
-                r.raise_for_status()
+                if not r.ok:
+                    print(f'{model} HTTP {r.status_code}: {r.text[:300]}')
+                    break  # try next model, this one won't work
                 parts = r.json()['candidates'][0]['content']['parts']
                 print(f'OK: {model}')
                 return '\n'.join(p.get('text', '') for p in parts if p.get('text'))
