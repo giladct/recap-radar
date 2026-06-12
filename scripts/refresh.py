@@ -47,21 +47,33 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: find date nav structure then navigate back one day
+        # Yesterday: intercept network requests to find the data API
         yesterday_text = ''
         try:
+            api_calls = []
+            page.on('request', lambda req: api_calls.append(req.url)
+                    if any(x in req.url for x in ['ajax', 'api', 'json', 'xml', 'data', 'game', 'score', 'live', 'aspx', '.asmx', 'Handler'])
+                    else None)
+
             page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
 
-            # Dump raw HTML around date/nav areas to find the structure
-            raw_html = page.content()
-            # Look for onclick, doPostBack, or date patterns
-            import re as _re
-            snippets = _re.findall(r'.{0,60}(?:onclick|doPostBack|prevDay|nextDay|yesterday|date|arrow|nav).{0,60}',
-                                   raw_html, _re.IGNORECASE)
-            print('=== HTML SNIPPETS WITH onclick/date/nav ===')
-            for s in snippets[:30]:
-                print(s.replace('\n', ' '))
-            print('=== END SNIPPETS ===')
+            print('=== API CALLS ON PAGE LOAD ===')
+            for url in api_calls[:30]:
+                print(url)
+            print('=== END API CALLS ===')
+
+            # Try clicking any element that has visual arrow-like content
+            all_els = page.query_selector_all('*')
+            for el in all_els[:200]:
+                try:
+                    bb = el.bounding_box()
+                    if not bb or bb['width'] < 5 or bb['height'] < 5:
+                        continue
+                    outer = el.evaluate('e => e.outerHTML').strip()
+                    if any(ch in outer for ch in ['◄', '◀', '←', '‹', '«', 'prev', 'Prev', 'PREV']):
+                        print(f'ARROW CANDIDATE: {outer[:200]}')
+                except Exception:
+                    pass
 
         except Exception as e:
             print(f'Yesterday debug failed: {e}')
