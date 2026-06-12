@@ -76,6 +76,19 @@ def fetch_pages():
             }''')
             print(f'Game container: {game_container_classes}')
 
+            # Inspect function source code to understand date nav mechanism
+            fn_sources = page.evaluate('''() => ({
+                prev: typeof prev === "function" ? prev.toString().slice(0,500) : "not found",
+                changeDateGames: typeof changeDateGames === "function" ? changeDateGames.toString().slice(0,500) : "not found",
+                showDay: typeof showDay === "function" ? showDay.toString().slice(0,500) : "not found",
+                ChosenDay: typeof ChosenDay !== "undefined" ? String(ChosenDay) : "not found",
+                currentDay: typeof currentDay !== "undefined" ? String(currentDay) : "not found",
+                todayDate: typeof todayDate !== "undefined" ? String(todayDate) : "not found",
+            })''')
+            for k, v in fn_sources.items():
+                print(f'=== {k} ===')
+                print(v)
+
             # Intercept AJAX calls triggered by changeDateGames
             ajax_urls = []
             page.on('request', lambda req: ajax_urls.append(req.url))
