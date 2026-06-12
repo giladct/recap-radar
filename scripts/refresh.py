@@ -87,6 +87,47 @@ def parse_event(ev):
     }
 
 
+# ── ESPN match summary ────────────────────────────────────────────────────────
+
+def fetch_summary(event_id):
+    try:
+        r = requests.get(f'{ESPN_BASE}/summary?event={event_id}', timeout=15)
+        if not r.ok:
+            return {}
+        d = r.json()
+
+        # Per-team stats from boxscore
+        team_stats = {}
+        for ts in d.get('boxscore', {}).get('teams', []):
+            abbr = ts.get('team', {}).get('abbreviation', '?')
+            team_stats[abbr] = {s['name']: s.get('displayValue', '')
+                                for s in ts.get('statistics', [])}
+
+        # Goals and red cards from keyEvents
+        goals, reds = [], []
+        for ev in d.get('keyEvents', []):
+            ev_type = ev.get('type', {}).get('type', '')
+            clock   = ev.get('clock', {}).get('displayValue', '?')
+            abbr    = ev.get('team', {}).get('abbreviation', '?')
+            if ev.get('scoringPlay'):
+                suffix = '(pen)' if 'penalty' in ev_type else ''
+                goals.append(f"{clock}({abbr}){suffix}")
+            elif ev_type in ('red-card', 'yellow-red-card'):
+                reds.append(f"{clock}({abbr})")
+
+        result = {'goals': goals, 'reds': reds}
+        teams = list(team_stats.keys())
+        if len(teams) >= 2:
+            def g(t, k): return team_stats.get(t, {}).get(k, '?')
+            result['sot']  = {t: g(t, 'shotsOnTarget') for t in teams}
+            result['shots'] = {t: g(t, 'totalShots')   for t in teams}
+            result['poss'] = {t: g(t, 'possessionPct') for t in teams}
+        return result
+    except Exception as e:
+        print(f'Summary {event_id}: {e}')
+        return {}
+
+
 # ── LLM heat ratings ──────────────────────────────────────────────────────────
 
 def call_llm(prompt):
@@ -114,16 +155,37 @@ def call_llm(prompt):
 def rate_finished(games):
     if not games:
         return {}
-    lines = '\n'.join(f'{g["id"]}|{g["away"]} {g["score"] or "?"} {g["home"]}|{g["league"]}' for g in games)
+
+    print('Fetching match summaries...')
+    lines = []
+    for g in games:
+        s = fetch_summary(g['id'])
+        parts = [f'{g["id"]}|{g["away"]} {g["score"] or "?"} {g["home"]}|{g["league"]}']
+        if s.get('goals'):
+            parts.append('goals:' + ','.join(s['goals']))
+        sot   = s.get('sot', {})
+        shots = s.get('shots', {})
+        if sot:
+            parts.append('SoT:' + ' '.join(f'{t}={sot[t]}({shots.get(t,"?")} shots)' for t in sot))
+        poss = s.get('poss', {})
+        if poss:
+            parts.append('poss:' + ' '.join(f'{t}={poss[t]}%' for t in poss))
+        if s.get('reds'):
+            parts.append('reds:' + ','.join(s['reds']))
+        lines.append(' | '.join(parts))
+
     prompt = f"""FIFA World Cup 2026. Rate each finished match for recap watchability.
 
 Return ONLY raw JSON (no markdown): {{"ratings":[{{"id":"...","heat":2,"note":"under 8 words"}}]}}
 
-heat: 1=one-sided/boring 2=decent match 3=must-watch drama
+heat: 1=boring/one-sided  2=decent match  3=must-watch
 note: max 8 words, no score numbers (e.g. "Stunning comeback in stoppage time")
 
-Matches (id|score|group):
-{lines}"""
+Key signals: late goals = drama, red cards = chaos, comeback = excitement, high SoT = open game.
+A 0-0 with many chances can rate higher than a comfortable 3-0.
+
+Matches:
+{chr(10).join(lines)}"""
     try:
         raw = call_llm(prompt)
         raw = re.sub(r'```json|```', '', raw).strip()
