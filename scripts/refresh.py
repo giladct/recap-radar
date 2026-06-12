@@ -86,8 +86,27 @@ def fetch_pages():
             print(f'todayDate={today_date_int}, winnerProgram={winner_program!r}')
 
             if today_date_int is not None:
+                # Verify: what date does the initial page show?
+                initial_text = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0,200) : null; }")
+                print(f'Initial .ShowResultTablediv (before nav): {initial_text!r}')
+
+                # Try two offsets and print both snippets to find the right one
+                for offset in [1, 2]:
+                    check_day = int(today_date_int) - offset
+                    page.evaluate(f'showDay({check_day}, null, 1)')
+                    try:
+                        page.wait_for_function(
+                            f"() => document.querySelector('.ShowResultTablediv') && document.querySelector('.ShowResultTablediv').innerText.trim().length > 500",
+                            timeout=15000
+                        )
+                    except Exception:
+                        pass
+                    t = page.evaluate("() => { const el = document.querySelector('.ShowResultTablediv'); return el ? el.innerText.trim().slice(0,300) : null; }")
+                    print(f'showDay({check_day}) (offset -{offset}): {t!r}')
+
+                # Use offset 1 for now (may update after seeing output)
                 yest_date_int = int(today_date_int) - 1
-                print(f'Calling showDay({yest_date_int})...')
+                print(f'Calling showDay({yest_date_int}) for real...')
                 page.evaluate(f'showDay({yest_date_int}, null, 1)')
                 # Wait for .ShowResultTablediv to be populated
                 try:
