@@ -24,18 +24,34 @@ Rules:
 
 
 def call_gemini(prompt):
-    r = requests.post(
-        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}',
-        json={
-            'contents': [{'role': 'user', 'parts': [{'text': prompt}]}],
-            'tools': [{'google_search': {}}],
-            'generationConfig': {'maxOutputTokens': 4000, 'temperature': 0.1}
-        },
-        timeout=90
-    )
-    r.raise_for_status()
-    parts = r.json()['candidates'][0]['content']['parts']
-    return '\n'.join(p.get('text', '') for p in parts if p.get('text'))
+    import time
+    models = ['gemini-1.5-flash', 'gemini-2.0-flash']
+    last_err = None
+    for model in models:
+        for attempt in range(3):
+            try:
+                r = requests.post(
+                    f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_KEY}',
+                    json={
+                        'contents': [{'role': 'user', 'parts': [{'text': prompt}]}],
+                        'tools': [{'google_search': {}}],
+                        'generationConfig': {'maxOutputTokens': 4000, 'temperature': 0.1}
+                    },
+                    timeout=90
+                )
+                if r.status_code == 429:
+                    wait = 10 * (attempt + 1)
+                    print(f'{model} rate-limited, retrying in {wait}s...')
+                    time.sleep(wait)
+                    last_err = f'429 on {model}'
+                    continue
+                r.raise_for_status()
+                parts = r.json()['candidates'][0]['content']['parts']
+                return '\n'.join(p.get('text', '') for p in parts if p.get('text'))
+            except Exception as e:
+                last_err = str(e)
+                time.sleep(5)
+    raise RuntimeError(f'All models failed: {last_err}')
 
 
 def extract_json(text):
