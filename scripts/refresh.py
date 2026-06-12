@@ -47,36 +47,51 @@ def fetch_pages():
         except Exception as e:
             print(f'TV tab not found: {e}')
 
-        # Yesterday: intercept network requests to find the data API
+        # Yesterday: try multiple date URL patterns and compare content length/snippet
         yesterday_text = ''
-        try:
-            api_calls = []
-            page.on('request', lambda req: api_calls.append(req.url)
-                    if any(x in req.url for x in ['ajax', 'api', 'json', 'xml', 'data', 'game', 'score', 'live', 'aspx', '.asmx', 'Handler'])
-                    else None)
+        yest_dd_mm_yyyy = yesterday.strftime('%d/%m/%Y')     # 11/06/2026
+        yest_ddmmyyyy   = yesterday.strftime('%d%m%Y')       # 11062026
+        yest_iso        = yesterday.strftime('%Y-%m-%d')     # 2026-06-11
+        yest_il_slash   = yesterday.strftime('%d-%m-%Y')     # 11-06-2026
 
-            page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
+        today_snippet = scores_text[:100]
+        print(f'Today snippet: {today_snippet!r}')
 
-            print('=== API CALLS ON PAGE LOAD ===')
-            for url in api_calls[:30]:
-                print(url)
-            print('=== END API CALLS ===')
+        for label, url in [
+            ('DD/MM/YYYY',  f'{BASE_URL}?date={yest_dd_mm_yyyy}'),
+            ('DDMMYYYY',    f'{BASE_URL}?DT={yest_ddmmyyyy}'),
+            ('ISO',         f'{BASE_URL}?date={yest_iso}'),
+            ('dash',        f'{BASE_URL}?date={yest_il_slash}'),
+            ('d param',     f'{BASE_URL}?d={yest_iso}'),
+        ]:
+            try:
+                page.goto(url, wait_until='networkidle', timeout=20000)
+                text = strip_html(page.content())[:5000]
+                snippet = text[:100]
+                different = snippet != today_snippet
+                print(f'{label} | different={different} | URL={page.url} | snippet={snippet!r}')
+                if different and len(text) > 500:
+                    yesterday_text = text
+                    print(f'  → Using this as yesterday content')
+                    break
+            except Exception as e:
+                print(f'{label} failed: {e}')
 
-            # Try clicking any element that has visual arrow-like content
-            all_els = page.query_selector_all('*')
-            for el in all_els[:200]:
-                try:
-                    bb = el.bounding_box()
-                    if not bb or bb['width'] < 5 or bb['height'] < 5:
-                        continue
-                    outer = el.evaluate('e => e.outerHTML').strip()
-                    if any(ch in outer for ch in ['◄', '◀', '←', '‹', '«', 'prev', 'Prev', 'PREV']):
-                        print(f'ARROW CANDIDATE: {outer[:200]}')
-                except Exception:
-                    pass
-
-        except Exception as e:
-            print(f'Yesterday debug failed: {e}')
+        if not yesterday_text:
+            print('All date URL patterns failed; trying JS evaluation for date nav...')
+            try:
+                page.goto(BASE_URL, wait_until='networkidle', timeout=20000)
+                # Look for any globally accessible date-change functions
+                js_fns = page.evaluate('''() => {
+                    const fns = [];
+                    for (const k of Object.keys(window)) {
+                        if (/date|day|prev|next|yesterday/i.test(k)) fns.push(k);
+                    }
+                    return fns;
+                }''')
+                print(f'Date-related JS globals: {js_fns}')
+            except Exception as e:
+                print(f'JS eval failed: {e}')
 
         browser.close()
     return scores_text, tv_text, yesterday_text
