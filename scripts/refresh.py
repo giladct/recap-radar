@@ -43,9 +43,10 @@ def parse_event(ev):
 
     st = comp.get('status', {}).get('type', {})
     st_name = st.get('name', 'STATUS_SCHEDULED')
-    if st_name == 'STATUS_FINAL':
+    if st_name in ('STATUS_FULL_TIME', 'STATUS_FINAL', 'STATUS_FINAL_AET', 'STATUS_FINAL_PEN'):
         status = 'finished'
-    elif st_name in ('STATUS_IN_PROGRESS', 'STATUS_HALFTIME', 'STATUS_END_PERIOD'):
+    elif st_name in ('STATUS_IN_PROGRESS', 'STATUS_HALFTIME', 'STATUS_END_PERIOD',
+                     'STATUS_EXTRA_TIME', 'STATUS_PENALTY'):
         status = 'live'
     elif st_name == 'STATUS_POSTPONED':
         status = 'postponed'
