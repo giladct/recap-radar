@@ -154,6 +154,9 @@ try:
     page_text = re.sub(r'\s+', ' ', page_text).strip()
     page_text = page_text[:8000]  # ~2000 tokens, well within free limits
     source_desc = 'HTML from livegames.co.il'
+    print('=== PAGE TEXT SAMPLE ===')
+    print(page_text[:3000])
+    print('========================')
 except Exception as e:
     print(f'Fetch failed ({e}), falling back to knowledge cutoff data')
     page_text = f'Could not fetch livegames.co.il: {e}'
