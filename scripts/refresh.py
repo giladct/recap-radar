@@ -88,18 +88,29 @@ def fetch_pages():
             new_ajax = [u for u in ajax_urls if 'livegames' in u]
             print(f'AJAX calls after changeDateGames: {new_ajax}')
 
-            # Extract from #GameResultView — the main game content element
+            # Wait for #GameResultView to be populated after AJAX update
+            try:
+                page.wait_for_function(
+                    "() => { const el = document.getElementById('GameResultView'); return el && el.innerText.trim().length > 500; }",
+                    timeout=15000
+                )
+                print('GameResultView populated after changeDateGames')
+            except Exception as we:
+                print(f'Wait for GameResultView timed out: {we}')
+
             game_text = page.evaluate('''() => {
                 const el = document.getElementById('GameResultView');
                 return el ? el.innerText.trim() : null;
             }''')
-            if game_text and len(game_text) > 200:
+            grv_len = len(game_text) if game_text else 0
+            print(f'GameResultView after changeDateGames: {grv_len} chars')
+            if game_text and grv_len > 200:
                 yesterday_text = re.sub(r'\s+', ' ', game_text)[:8000]
                 print(f'Got yesterday from #GameResultView: {len(yesterday_text)} chars')
             else:
                 yesterday_text = strip_html(page.content())[:8000]
                 print(f'Fallback: got yesterday from full page: {len(yesterday_text)} chars')
-            print(f'Yesterday sample: {yesterday_text[:400]!r}')
+            print(f'Yesterday sample: {yesterday_text[:500]!r}')
         except Exception as e:
             print(f'Yesterday fetch failed: {e}')
 
