@@ -89,28 +89,44 @@ def fetch_pages():
                 yest_date_int = int(today_date_int) - 1
                 print(f'Fetching Days.ashx?date={yest_date_int} via in-page fetch()...')
 
-                # Try to fetch Days.ashx with proper XMLHttpRequest headers (required by ASP.NET handler)
-                # Also try day-1 and day-2 since we're not sure of the numbering
-                for day_offset, test_day in [(1, yest_date_int), (2, int(today_date_int) - 2)]:
-                    ashx_html = page.evaluate(f'''async () => {{
-                        try {{
-                            const resp = await fetch('/handlers/Days.ashx?date={test_day}&winner_program={winner_program}', {{
-                                headers: {{
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'text/html, */*; q=0.01'
-                                }}
-                            }});
-                            return [resp.status, await resp.text()];
-                        }} catch(e) {{
-                            return [0, 'FETCH_ERROR: ' + String(e)];
-                        }}
-                    }}''')
-                    status, html = ashx_html[0], ashx_html[1]
-                    print(f'Days.ashx day={test_day} (offset-{day_offset}): status={status}, {len(html)} chars, starts: {html[:200]!r}')
-                    if status == 200 and len(html) > 500 and 'Runtime Error' not in html:
-                        yesterday_text = strip_html(html)[:8000]
-                        print(f'Got yesterday from Days.ashx (day offset -{day_offset})')
-                        break
+                # Scan all elements for onclick handlers calling showDay
+                nav_elements = page.evaluate('''() => {
+                    const results = [];
+                    document.querySelectorAll('*').forEach(el => {
+                        const oc = el.getAttribute('onclick') || '';
+                        if (oc.includes('showDay') || oc.includes('prevDay') || oc.includes('nextDay')) {
+                            results.push({
+                                tag: el.tagName,
+                                id: el.id,
+                                cls: el.className,
+                                onclick: oc.slice(0, 200),
+                                text: el.innerText.trim().slice(0, 30)
+                            });
+                        }
+                    });
+                    return results;
+                }''')
+                print(f'Elements with showDay onclick: {nav_elements}')
+
+                # Also check for jQuery event listeners (harder to detect)
+                # Try clicking an element at a predictable position (left arrow area)
+                # Or use jQuery's _data to find event handlers
+                jquery_handlers = page.evaluate('''() => {
+                    const found = [];
+                    try {
+                        document.querySelectorAll('*').forEach(el => {
+                            const data = jQuery && jQuery._data && jQuery._data(el, 'events');
+                            if (data && data.click) {
+                                const oc = data.click.map(h => h.handler.toString().slice(0, 100)).join('|');
+                                if (oc.includes('showDay') || oc.includes('Day')) {
+                                    found.push({tag: el.tagName, id: el.id, cls: el.className, handler: oc.slice(0, 150)});
+                                }
+                            }
+                        });
+                    } catch(e) { found.push('error: ' + e); }
+                    return found.slice(0, 10);
+                }''')
+                print(f'jQuery click handlers with Day: {jquery_handlers}')
                 page.evaluate(f'showDay({yest_date_int}, null, 1)')
                 # Wait for .ShowResultTablediv to be populated
                 try:
