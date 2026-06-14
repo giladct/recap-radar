@@ -182,6 +182,7 @@ heat: 1=unwatchable 2=forgettable 3=decent 4=great game 5=all-time classic
 note: max 8 words, no score numbers (e.g. "Stunning comeback in stoppage time")
 
 Key signals: late goals = drama, red cards = chaos, comeback = excitement, high SoT = open game.
+Surprising result (underdog wins, heavy favorite loses or barely survives) adds to the rating.
 A 0-0 with many chances can rate higher than a comfortable 3-0.
 
 Matches:
@@ -242,6 +243,12 @@ def card_html(g):
         except Exception:
             pass
 
+    kickoff = f'{date_str} {time_str}'.strip() if (date_str or time_str) else 'TBD'
+    left = (f'<span class="card-left">'
+            f'<span class="league">{league}</span>'
+            f'<span class="meta">{kickoff}</span>'
+            f'</span>')
+
     if status == 'live':
         right = (f'<span class="live-meta-wrap">'
                  f'<button class="reveal-btn">&#128065; Score</button>'
@@ -249,21 +256,22 @@ def card_html(g):
                  f'<span class="meta live"><span class="dot"></span> {period or "Live"}</span>'
                  f'<span class="started-ago"></span>'
                  f'</span>')
-        body = f'<div class="meta" style="margin-bottom:3px;">RECAP HEAT (LIVE)</div>{stars(heat)}<div class="note">{note}</div>'
+        body = f'{stars(heat)}<div class="note">{note}</div>'
     elif status == 'finished':
-        right = (f'<span class="score-final">{score}</span>'
-                 f'<button class="reveal-btn-score">&#128065; Score</button>')
+        right = (f'<span class="live-meta-wrap">'
+                 f'<span class="score-final">{score}</span>'
+                 f'<button class="reveal-btn-score">&#128065; Score</button>'
+                 f'</span>')
         body = f'{stars(heat)}<div class="note">{note}</div>{recap_link(away, home)}'
     elif status == 'postponed':
         right = ''
         body  = '<div class="note postponed">Postponed.</div>'
     else:
-        kickoff = f'{date_str} {time_str}'.strip() if (date_str or time_str) else 'TBD'
-        right = f'<span class="meta">{kickoff}</span>'
+        right = ''
         body  = ''
 
     return (f'<div class="{card_class}"{attrs}>\n'
-            f'  <div class="card-top"><span class="league">{league}</span>{right}</div>\n'
+            f'  <div class="card-top">{left}{right}</div>\n'
             f'  <div class="teams">{away} vs {home}</div>\n'
             f'  {body}\n'
             f'</div>')

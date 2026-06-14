@@ -26,7 +26,8 @@
   .dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(63,185,80,0.6);animation:pulse 1.6s infinite;flex-shrink:0;}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,185,80,0.5);}70%{box-shadow:0 0 0 7px rgba(63,185,80,0);}100%{box-shadow:0 0 0 0 rgba(63,185,80,0);}}
   .card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 9px;margin-bottom:3px;}
-  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:1px;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:1px;}
+  .card-left{display:flex;flex-direction:column;gap:1px;}
   .league{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;}
   .meta{font-family:Menlo,Consolas,monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
   .meta.live{color:var(--live);font-weight:600;display:flex;align-items:center;gap:4px;}
