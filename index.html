@@ -11,124 +11,125 @@
     --border:#262C36;
     --text:#E6EDF3;
     --muted:#7D8590;
-    --heat-low:#4A90D9;
-    --heat-mid:#F2A83B;
     --heat-high:#FF5C39;
     --live:#3FB950;
   }
   *{box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;padding-bottom:40px;}
-  .header{padding:16px 14px 14px;border-bottom:1px solid var(--border);}
-  .eyebrow{font-family:"Arial Narrow",sans-serif;letter-spacing:0.18em;text-transform:uppercase;font-size:11px;color:var(--muted);margin-bottom:6px;}
-  .title{font-family:"Arial Narrow",Helvetica,sans-serif;font-weight:800;font-size:30px;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 6px;}
-  .subtitle{font-size:13px;color:var(--muted);line-height:1.5;max-width:480px;}
-  .legend{margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);}
-  .legend span{display:flex;align-items:center;gap:5px;}
-  .legend .seg{width:14px;height:6px;border-radius:3px;display:inline-block;}
-  .section{padding:10px 14px;}
-  .section-title{font-family:"Arial Narrow",Helvetica,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;align-items:center;gap:8px;}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(63,185,80,0.6);animation:pulse 1.6s infinite;}
+  .header{padding:12px 12px 10px;border-bottom:1px solid var(--border);}
+  .eyebrow{font-family:"Arial Narrow",sans-serif;letter-spacing:0.18em;text-transform:uppercase;font-size:10px;color:var(--muted);margin-bottom:4px;}
+  .title{font-family:"Arial Narrow",Helvetica,sans-serif;font-weight:800;font-size:26px;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 4px;}
+  .subtitle{font-size:12px;color:var(--muted);line-height:1.4;max-width:480px;}
+  .legend{margin-top:8px;font-size:11px;color:var(--muted);}
+  .section{padding:6px 10px;}
+  .section-title{font-family:"Arial Narrow",Helvetica,sans-serif;font-weight:700;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin:0 0 4px;display:flex;align-items:center;gap:8px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(63,185,80,0.6);animation:pulse 1.6s infinite;flex-shrink:0;}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,185,80,0.5);}70%{box-shadow:0 0 0 7px rgba(63,185,80,0);}100%{box-shadow:0 0 0 0 rgba(63,185,80,0);}}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:6px;}
-  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:3px;}
-  .league{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-  .meta{font-family:Menlo,Consolas,monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
-  .meta.live{color:var(--live);font-weight:600;display:flex;align-items:center;gap:5px;}
-  .teams{direction:rtl;text-align:right;font-size:15px;font-weight:600;margin:2px 0 5px;unicode-bidi:plaintext;line-height:1.3;}
-  .stars{font-size:17px;letter-spacing:1px;margin-bottom:4px;color:var(--heat-high);}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 9px;margin-bottom:3px;}
+  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:1px;}
+  .league{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .meta{font-family:Menlo,Consolas,monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .meta.live{color:var(--live);font-weight:600;display:flex;align-items:center;gap:4px;}
+  .teams{font-size:13px;font-weight:600;margin:1px 0 3px;line-height:1.25;}
+  .stars{font-size:14px;letter-spacing:0px;margin-bottom:2px;color:var(--heat-high);line-height:1;}
   .stars-empty{color:#2D333B;}
-  .note{font-size:12px;color:var(--muted);line-height:1.35;}
+  .note{font-size:11px;color:var(--muted);line-height:1.3;}
   .note.postponed{font-style:italic;}
-  .toggles-row{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:14px;}
-  .toggle-wrap{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;}
-  .toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+  .toggles-row{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;}
+  .toggle-wrap{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);cursor:pointer;user-select:none;}
+  .toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
   .toggle input{opacity:0;width:0;height:0;}
   .toggle .slider{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:background .2s;}
-  .toggle .slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;}
+  .toggle .slider::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;}
   .toggle input:checked + .slider{background:var(--heat-high);}
-  .toggle input:checked + .slider::before{transform:translateX(18px);}
-  .score{font-family:Menlo,Consolas,monospace;font-weight:700;font-size:13px;color:var(--text);display:none;letter-spacing:0.05em;direction:ltr;}
+  .toggle input:checked + .slider::before{transform:translateX(16px);}
+  .score-final{font-family:Menlo,Consolas,monospace;font-weight:700;font-size:13px;color:var(--text);letter-spacing:0.08em;direction:ltr;}
+  .score{font-family:Menlo,Consolas,monospace;font-weight:700;font-size:12px;color:var(--text);display:none;letter-spacing:0.05em;direction:ltr;}
   .card.show-score .score{display:inline-block;}
-  .reveal-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;font-size:11px;padding:2px 9px;line-height:1.6;cursor:pointer;font-family:inherit;}
+  .reveal-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;font-size:10px;padding:1px 7px;line-height:1.6;cursor:pointer;font-family:inherit;}
   .reveal-btn:active{border-color:var(--heat-high);color:var(--text);}
   .card.show-score .reveal-btn{display:none;}
-  .reset-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
-  .reset-btn:active{border-color:var(--heat-high);color:var(--text);}
-  .live-meta-wrap{display:flex;align-items:center;gap:8px;}
+  /* Finished card score/reveal visibility controlled by scores-hidden body class */
+  .score-final{display:inline-block;}
+  .card.finished .reveal-btn-score{display:none;}
+  body.scores-hidden .card.finished .score-final{display:none;}
+  body.scores-hidden .card.finished .reveal-btn-score{display:inline-block;}
+  body.scores-hidden .card.finished.show-score .score-final{display:inline-block;}
+  body.scores-hidden .card.finished.show-score .reveal-btn-score{display:none;}
+  body.scores-hidden .card.finished:not(.show-score) .recap-link{display:none;}
+  .live-meta-wrap{display:flex;align-items:center;gap:6px;}
   .started-ago{font-family:Menlo,Consolas,monospace;font-size:10px;color:var(--muted);}
-  .channel{font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.04em;padding:2px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);white-space:nowrap;}
-  .score-final{font-family:Menlo,Consolas,monospace;font-weight:700;font-size:14px;color:var(--text);letter-spacing:0.08em;direction:ltr;}
-  .recap-link{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:11px;font-weight:600;color:var(--heat-high);text-decoration:none;border:1px solid var(--border);padding:4px 10px;border-radius:999px;}
+  .recap-link{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:10px;font-weight:600;color:var(--heat-high);text-decoration:none;border:1px solid var(--border);padding:2px 8px;border-radius:999px;}
   .recap-link:active{border-color:var(--heat-high);}
-  .card.show-score .recap-link{display:none;}
-  footer{padding:18px;color:var(--muted);font-size:11px;text-align:center;line-height:1.6;}
+  footer{padding:14px;color:var(--muted);font-size:10px;text-align:center;line-height:1.6;}
 </style>
 </head>
-<body>
+<body class="scores-hidden">
 
 <div class="header">
   <div class="eyebrow">FIFA World Cup 2026</div>
   <h1 class="title">Worth the Recap?</h1>
-  <p class="subtitle">Tap &#128065; to reveal a score. <strong>Recap Heat</strong> &#128293;1–3 = how worth watching it was.</p>
+  <p class="subtitle">Tap &#128065; to reveal a score. Stars = how worth watching it was.</p>
   <div class="legend">
-    <span style="color:var(--heat-high)">★★★★★</span> = All-time classic &nbsp;·&nbsp;
-    <span style="color:var(--heat-high)">★★★</span> = Decent &nbsp;·&nbsp;
-    <span style="color:var(--heat-high)">★</span> = Skip it
+    <span style="color:var(--heat-high)">★★★★★</span> all-time classic &nbsp;·&nbsp;
+    <span style="color:var(--heat-high)">★★★</span> decent &nbsp;·&nbsp;
+    <span style="color:var(--heat-high)">★</span> skip it
   </div>
   <div class="toggles-row">
     <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="hideScoresToggle" checked><span class="slider"></span></span>
+      Hide scores
+    </label>
+    <label class="toggle-wrap">
       <span class="toggle"><input type="checkbox" id="liveToggle"><span class="slider"></span></span>
-      Live now only
+      Live only
     </label>
   </div>
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px;">
-    <button class="reset-btn" id="resetScores">&#128260; Hide all revealed scores</button>
-    <span style="font-family:Menlo,Consolas,monospace;font-size:11px;color:var(--muted);">&#128337; Updated 13:25 · June 14, 2026</span>
-  </div>
+  <div style="margin-top:8px;font-family:Menlo,Consolas,monospace;font-size:10px;color:var(--muted);">&#128337; Updated 13:32 · June 14, 2026</div>
 </div>
 
 
 <div class="section">
   <div class="section-title">&#9989; Full Time — Recap Heat</div>
 <div class="card finished" data-id="760415" data-started-at="2026-06-11T22:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">0-2</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">0-2</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">South Africa vs Mexico</div>
-  <div class="stars">★★<span class="stars-empty">☆☆☆</span></div><div class="note">Lack of drama, predictable outcome</div><a class="recap-link" href="https://www.youtube.com/results?search_query=South%20Africa%20Mexico%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★<span class="stars-empty">☆☆☆</span></div><div class="note">Lack of excitement, few chances created</div><a class="recap-link" href="https://www.youtube.com/results?search_query=South%20Africa%20Mexico%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760414" data-started-at="2026-06-12T05:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-2</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-2</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Czechia vs South Korea</div>
-  <div class="stars">★★★★<span class="stars-empty">☆</span></div><div class="note">Late goals made it exciting</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Czechia%20South%20Korea%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★★★<span class="stars-empty">☆</span></div><div class="note">Late goals made it thrilling</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Czechia%20South%20Korea%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760416" data-started-at="2026-06-12T22:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-1</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-1</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Bosnia-Herzegovina vs Canada</div>
-  <div class="stars">★★★<span class="stars-empty">☆☆</span></div><div class="note">Decent match, but forgettable</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Bosnia-Herzegovina%20Canada%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★★<span class="stars-empty">☆☆</span></div><div class="note">Decent draw, but not memorable</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Bosnia-Herzegovina%20Canada%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760417" data-started-at="2026-06-13T04:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-4</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-4</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Paraguay vs United States</div>
-  <div class="stars">★★★★★<span class="stars-empty"></span></div><div class="note">Thrilling comeback with late goals</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Paraguay%20United%20States%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★★★★<span class="stars-empty"></span></div><div class="note">High-scoring, dramatic late goals</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Paraguay%20United%20States%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760420" data-started-at="2026-06-13T22:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-1</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-1</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Switzerland vs Qatar</div>
-  <div class="stars">★★★<span class="stars-empty">☆☆</span></div><div class="note">Late equalizer adds some drama</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Switzerland%20Qatar%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★★<span class="stars-empty">☆☆</span></div><div class="note">Late equalizer saved the match</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Switzerland%20Qatar%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760419" data-started-at="2026-06-14T01:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-1</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-1</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Morocco vs Brazil</div>
-  <div class="stars">★★<span class="stars-empty">☆☆☆</span></div><div class="note">Underwhelming draw, few chances</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Morocco%20Brazil%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★<span class="stars-empty">☆☆☆</span></div><div class="note">Underwhelming draw, few highlights</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Morocco%20Brazil%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760418" data-started-at="2026-06-14T04:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-0</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">1-0</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Scotland vs Haiti</div>
-  <div class="stars">★<span class="stars-empty">☆☆☆☆</span></div><div class="note">Boring match, no excitement</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Scotland%20Haiti%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★<span class="stars-empty">☆☆☆☆</span></div><div class="note">Boring match, no real chances</div><a class="recap-link" href="https://www.youtube.com/results?search_query=Scotland%20Haiti%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 <div class="card finished" data-id="760421" data-started-at="2026-06-14T07:00:00+03:00">
-  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">0-2</span></div>
+  <div class="card-top"><span class="league">FIFA World Cup 2026</span><span class="score-final">0-2</span><button class="reveal-btn-score">&#128065; Score</button></div>
   <div class="teams">Türkiye vs Australia</div>
-  <div class="stars">★★<span class="stars-empty">☆☆☆</span></div><div class="note">Comfortable win, lacking intensity</div><a class="recap-link" href="https://www.youtube.com/results?search_query=T%C3%BCrkiye%20Australia%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
+  <div class="stars">★★<span class="stars-empty">☆☆☆</span></div><div class="note">Comfortable win, lacking excitement</div><a class="recap-link" href="https://www.youtube.com/results?search_query=T%C3%BCrkiye%20Australia%20recap%20highlights" target="_blank" rel="noopener">&#9654; Watch recap</a>
 </div>
 </div>
 
@@ -618,19 +619,33 @@
 
 
 <footer>
-  Auto-updated: June 14, 2026, 13:25 Israel time &middot; data: ESPN
+  Auto-updated: June 14, 2026, 13:32 Israel time &middot; data: ESPN
 </footer>
 
 <script>
+  const hideScoresToggle = document.getElementById('hideScoresToggle');
   const liveToggle = document.getElementById('liveToggle');
 
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.reveal-btn');
-    if (btn) btn.closest('.card').classList.add('show-score');
+  // Restore hide-scores state from localStorage (default: hidden)
+  const savedHide = localStorage.getItem('hideScores');
+  if (savedHide === 'false') {
+    hideScoresToggle.checked = false;
+    document.body.classList.remove('scores-hidden');
+  }
+
+  hideScoresToggle.addEventListener('change', function() {
+    if (this.checked) {
+      document.body.classList.add('scores-hidden');
+      document.querySelectorAll('.card.finished.show-score').forEach(c => c.classList.remove('show-score'));
+    } else {
+      document.body.classList.remove('scores-hidden');
+    }
+    localStorage.setItem('hideScores', this.checked);
   });
 
-  document.getElementById('resetScores').addEventListener('click', function(){
-    document.querySelectorAll('.card.show-score').forEach(c => c.classList.remove('show-score'));
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.reveal-btn, .reveal-btn-score');
+    if (btn) btn.closest('.card').classList.add('show-score');
   });
 
   function applyFilters(){
@@ -652,7 +667,7 @@
     const hrs  = Math.floor(mins / 60);
     const rem  = mins % 60;
     const span = mins < 60 ? `${mins}m` : (rem ? `${hrs}h ${rem}m` : `${hrs}h`);
-    return isLive ? (mins < 1 ? 'Live · just started' : `Live · ${span}`) : `~${span} ago`;
+    return isLive ? (mins < 1 ? 'just started' : `${span}`) : `${span} ago`;
   }
 
   function updateStartedTimes(){
