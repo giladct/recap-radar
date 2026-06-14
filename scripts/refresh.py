@@ -178,7 +178,7 @@ def rate_finished(games):
 
 Return ONLY raw JSON (no markdown): {{"ratings":[{{"id":"...","heat":2,"note":"under 8 words"}}]}}
 
-heat: 1=boring/one-sided  2=decent match  3=must-watch
+heat: 1=unwatchable 2=forgettable 3=decent 4=great game 5=all-time classic
 note: max 8 words, no score numbers (e.g. "Stunning comeback in stoppage time")
 
 Key signals: late goals = drama, red cards = chaos, comeback = excitement, high SoT = open game.
@@ -199,13 +199,9 @@ Matches:
 
 # ── HTML rendering ────────────────────────────────────────────────────────────
 
-def heatbar(heat):
-    h = max(1, min(3, int(heat or 1)))
-    cls = 'on-high' if h >= 3 else ('on-mid' if h == 2 else 'on-low')
-    return '<div class="heatbar">' + ''.join(
-        f'<div class="seg {cls}"></div>' if i < h else '<div class="seg"></div>'
-        for i in range(3)
-    ) + '</div>'
+def stars(heat):
+    h = max(1, min(5, int(heat or 1)))
+    return f'<div class="stars">{"★" * h}<span class="stars-empty">{"☆" * (5 - h)}</span></div>'
 
 
 def recap_link(away, home):
@@ -253,10 +249,10 @@ def card_html(g):
                  f'<span class="meta live"><span class="dot"></span> {period or "Live"}</span>'
                  f'<span class="started-ago"></span>'
                  f'</span>')
-        body = f'<div class="meta" style="margin-bottom:3px;">HEAT SO FAR (LIVE)</div>{heatbar(heat)}<div class="note">{note}</div>'
+        body = f'<div class="meta" style="margin-bottom:3px;">RECAP HEAT (LIVE)</div>{stars(heat)}<div class="note">{note}</div>'
     elif status == 'finished':
         right = f'<span class="score-final">{score}</span>'
-        body = f'{heatbar(heat)}<div class="note">{note}</div>{recap_link(away, home)}'
+        body = f'{stars(heat)}<div class="note">{note}</div>{recap_link(away, home)}'
     elif status == 'postponed':
         right = ''
         body  = '<div class="note postponed">Postponed.</div>'
