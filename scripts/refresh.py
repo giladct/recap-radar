@@ -251,7 +251,8 @@ def card_html(g):
                  f'</span>')
         body = f'<div class="meta" style="margin-bottom:3px;">RECAP HEAT (LIVE)</div>{stars(heat)}<div class="note">{note}</div>'
     elif status == 'finished':
-        right = f'<span class="score-final">{score}</span>'
+        right = (f'<span class="score-final">{score}</span>'
+                 f'<button class="reveal-btn-score">&#128065; Score</button>')
         body = f'{stars(heat)}<div class="note">{note}</div>{recap_link(away, home)}'
     elif status == 'postponed':
         right = ''
